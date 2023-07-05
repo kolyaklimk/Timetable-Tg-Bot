@@ -1,15 +1,10 @@
-﻿using System;
-using Telegram.Bot;
+﻿namespace Timetable_Tg_Bot;
 
-namespace MyApp 
+internal class Program
 {
-    internal class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            var botClient = new TelegramBotClient("");
-
-            Console.ReadKey();
-        }
+        var bot = new Tg_Bot();
+        Console.ReadKey();
     }
 }
