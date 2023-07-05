@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Timetable_Tg_Bot.Enities;
 
-public class BotBdContext : DbContext
+public class BotDbContext : DbContext
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<WorkTime> WorkTimes => Set<WorkTime>();
-    public BotBdContext() => Database.EnsureCreated();
+    public BotDbContext() => Database.EnsureCreated();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
