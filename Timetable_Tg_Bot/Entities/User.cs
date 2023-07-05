@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Timetable_Tg_Bot.Enities;
+﻿namespace TimetableTgBot.Entities;
 
 public class User
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
     public string Name { get; set; }
     public string Password { get; set; }
     public ICollection<WorkTime> WorkTimes { get; } = new List<WorkTime>();
