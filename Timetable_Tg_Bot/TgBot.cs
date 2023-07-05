@@ -4,8 +4,6 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
-using TimetableTgBot.Entities;
 using TimetableTgBot.TgCommands;
 
 namespace TimetableTgBot;
@@ -39,19 +37,24 @@ public class TgBot
         var callbackQuery = update.CallbackQuery;
 
         #region /start
-
-        if (message?.Text == "/start")
+        if (message.Text == "/start")
         {
-            var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id,cancellationToken);
+            var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
 
-            if (user != null && !string.IsNullOrEmpty(user.Name) && !string.IsNullOrEmpty(user.Password))
+            if (user == null)
             {
-                await StartCommands.LogInAndRegister(botClient, message, callbackQuery);
+                await DbContext.Users.AddAsync(new Entities.User
+                {
+                    Id = message.From.Id,
+                    Name = message.From.FirstName,
+                    Subscription = DateTime.Now.AddDays(3)
+                }, cancellationToken);
 
-                await GeneralCommands.DeleteMessage(botClient, message);
+                await DbContext.SaveChangesAsync(cancellationToken);
             }
+            // Вывод меню
+            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
         }
-
         #endregion
     }
 
