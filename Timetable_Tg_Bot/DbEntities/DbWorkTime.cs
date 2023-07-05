@@ -2,10 +2,6 @@
 
 namespace TimetableTgBot.DbEntities;
 
-public class DbWorkTime : BotDbContext
+public class DbWorkTime 
 {
-    public void Delete(WorkTime workTime)
-    {
-        WorkTimes.Remove(workTime);
-    }
 }
