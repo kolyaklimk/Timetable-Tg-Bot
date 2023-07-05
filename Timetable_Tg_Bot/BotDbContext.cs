@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Timetable_Tg_Bot.Enities;
+using TimetableTgBot.Entities;
 
 public class BotDbContext : DbContext
 {
