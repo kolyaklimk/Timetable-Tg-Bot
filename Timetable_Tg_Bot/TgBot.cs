@@ -37,7 +37,7 @@ public class TgBot
         var callbackQuery = update.CallbackQuery;
 
         #region /start
-        if (message.Text == "/start")
+        if (message?.Text == "/start")
         {
             var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
 
@@ -52,7 +52,7 @@ public class TgBot
 
                 await DbContext.SaveChangesAsync(cancellationToken);
             }
-            // Вывод меню
+            await GeneralCommands.CreateMenu(botClient, message, cancellationToken);
             await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
         }
         #endregion
