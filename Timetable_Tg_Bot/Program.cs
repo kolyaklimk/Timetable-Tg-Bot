@@ -1,10 +1,10 @@
-﻿namespace Timetable_Tg_Bot;
+﻿namespace TimetableTgBot;
 
 internal class Program
 {
     static void Main(string[] args)
     {
-        var bot = new Tg_Bot();
+        var bot = new TgBot();
         Console.ReadKey();
     }
 }
