@@ -72,8 +72,9 @@ public static class TimeTableCommands
         }
 
         // Send message
-        await botClient.SendTextMessageAsync(
+        await botClient.EditMessageTextAsync(
             message.Chat.Id,
+            message.MessageId,
             "Выберите дату:",
             replyMarkup: markup,
             cancellationToken: cancellationToken);
