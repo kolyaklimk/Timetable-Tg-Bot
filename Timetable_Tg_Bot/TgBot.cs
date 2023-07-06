@@ -34,98 +34,119 @@ public class TgBot
 
     async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        var message = update.Message;
-
-        if (update.Type == UpdateType.Message)
+        try
         {
-            #region /start
-            if (message.Text == "/start")
+            var message = update.Message;
+
+            if (update.Type == UpdateType.Message)
             {
-                var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
-
-                if (user == null)
+                #region /start
+                if (message.Text == "/start")
                 {
-                    await DbContext.Users.AddAsync(new Entities.User
-                    {
-                        Id = message.From.Id,
-                        FirstName = message.From.FirstName,
-                        LastName = message.From.LastName,
-                        UserName = message.From.Username,
-                        Subscription = DateTime.Now.AddDays(3)
-                    }, cancellationToken);
+                    var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
 
-                    await DbContext.SaveChangesAsync(cancellationToken);
+                    if (user == null)
+                    {
+                        await DbContext.Users.AddAsync(new Entities.User
+                        {
+                            Id = message.From.Id,
+                            FirstName = message.From.FirstName,
+                            LastName = message.From.LastName,
+                            UserName = message.From.Username,
+                            Subscription = DateTime.Now.AddDays(3)
+                        }, cancellationToken);
+
+                        await DbContext.SaveChangesAsync(cancellationToken);
+                    }
+
+                    await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    await GeneralCommands.CreateMenu(false, botClient, message, cancellationToken);
+                    return;
+                }
+                #endregion
+            }
+
+            if (update.Type == UpdateType.CallbackQuery)
+            {
+                var callbackQuery = update.CallbackQuery;
+
+                if (callbackQuery.Data == "\0")
+                {
+                    await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+                    return;
                 }
 
+                #region GoMenu
+                if (callbackQuery?.Data == Constants.GoMenu)
+                {
+                    await GeneralCommands.CreateMenu(true, botClient, callbackQuery.Message, cancellationToken);
+                    return;
+                }
+                #endregion
+
+                #region TimeTable
+
+                #region ChooseDate
+                if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMonthTimeTable))
+                {
+                    Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMonthTimeTable);
+
+                    await TimeTableCommands.ChooseDateTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                    return;
+                }
+                #endregion
+
+                #region ChooseDate
+                #endregion
+
+                #endregion
+
+                #region ImageMenu
+                if (callbackQuery?.Data == Constants.ImageMenu)
+                {
+
+                    //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    return;
+                }
+                #endregion
+
+                #region SupportMenu
+                if (callbackQuery?.Data == Constants.SupportMenu)
+                {
+
+                    //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    return;
+                }
+                #endregion
+
+                #region SubscribeMenu
+                if (callbackQuery?.Data == Constants.SubscribeMenu)
+                {
+
+                    //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    return;
+                }
+                #endregion
+            }
+
+            else
+            {
                 await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-                await GeneralCommands.CreateMenu(botClient, message, cancellationToken);
-                return;
             }
-            #endregion
         }
-
-        if (update.Type == UpdateType.CallbackQuery)
+        catch (ApiRequestException apiRequestException)
         {
-            var callbackQuery = update.CallbackQuery;
-
-            if (callbackQuery.Data == "\0")
-            {
-                await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                return;
-            }
-
-            #region GoMenu
-            if (callbackQuery?.Data == Constants.GoMenu)
-            {
-                await GeneralCommands.DeleteMessage(botClient, callbackQuery.Message, cancellationToken);
-                await GeneralCommands.CreateMenu(botClient, callbackQuery.Message, cancellationToken);
-                return;
-            }
-            #endregion
-
-            #region ChooseDate
-            if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMonthTimeTable))
-            {
-                Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMonthTimeTable);
-
-                await GeneralCommands.DeleteMessage(botClient, callbackQuery.Message, cancellationToken);
-
-                await TimeTableCommands.ChooseDateTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
-                return;
-            }
-            #endregion
-
-            #region ImageMenu
-            if (callbackQuery?.Data == Constants.ImageMenu)
-            {
-
-                //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-                return;
-            }
-            #endregion
-
-            #region SupportMenu
-            if (callbackQuery?.Data == Constants.SupportMenu)
-            {
-
-                //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-                return;
-            }
-            #endregion
-
-            #region SubscribeMenu
-            if (callbackQuery?.Data == Constants.SubscribeMenu)
-            {
-
-                //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-                return;
-            }
-            #endregion
+            Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now);
+            Console.WriteLine($"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}\n");
         }
-
-        else
+        catch (Exception ex)
         {
-            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+            Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now);
+            Console.WriteLine($"{ex}\n\n");
+        }
+        catch
+        {
+            Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now + " \nError\n");
         }
     }
 
