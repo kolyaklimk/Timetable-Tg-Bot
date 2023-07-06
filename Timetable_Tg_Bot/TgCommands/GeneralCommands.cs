@@ -21,13 +21,15 @@ public static class GeneralCommands
 
     public static async Task CreateMenu(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        var replyKeyboardMarkup = new ReplyKeyboardMarkup(new[]
+        Console.WriteLine(2);
+
+        var replyKeyboardMarkup = new  InlineKeyboardMarkup(new[]
         {
-            new KeyboardButton[] { Constants.TimeTableMenu, Constants.ImageMenu },
-            new KeyboardButton[] { Constants.SupportMenu, Constants.SubscribeMenu }
+            new InlineKeyboardButton[] { Constants.ImageMenu, Constants.TimeTableMenu },
+            new InlineKeyboardButton[] { Constants.SupportMenu, Constants.SubscribeMenu }
         }); 
         
-        var mes = await botClient.SendTextMessageAsync(
+        await botClient.SendTextMessageAsync(
             message.Chat.Id,
             "Меню:",
             replyMarkup: replyKeyboardMarkup,
