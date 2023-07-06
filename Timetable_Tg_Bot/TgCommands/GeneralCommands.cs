@@ -1,6 +1,5 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TimetableTgBot.TgCommands;
 
@@ -8,22 +7,27 @@ public static class GeneralCommands
 {
     public static async Task DeleteMessage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        if (message != null)
-        {
-            try
-            {
-                await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
-            }
-            catch { }
-        }
+        await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
     }
 
-    public static async Task CreateMenu(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    public static async Task CreateMenu(bool edit, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        await botClient.SendTextMessageAsync(
-            message.Chat.Id,
-            "Меню:",
-            replyMarkup: Constants.MenuMarkup,
-            cancellationToken: cancellationToken);
+        if (edit)
+        {
+            await botClient.EditMessageTextAsync(
+                message.Chat.Id,
+                message.MessageId,
+                "Меню:",
+                replyMarkup: Constants.MenuMarkup,
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+            await botClient.SendTextMessageAsync(
+                message.Chat.Id,
+                "Меню:",
+                replyMarkup: Constants.MenuMarkup,
+                cancellationToken: cancellationToken);
+        }
     }
 }
