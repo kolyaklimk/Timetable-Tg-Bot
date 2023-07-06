@@ -56,6 +56,39 @@ public class TgBot
             await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
         }
         #endregion
+
+
+        #region TimeTableMenu
+        if (callbackQuery.Data == Constants.TimeTableMenu)
+        {
+
+            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+        }
+        #endregion
+
+        #region ImageMenu
+        if (callbackQuery.Data == Constants.ImageMenu)
+        {
+
+            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+        }
+        #endregion
+
+        #region SupportMenu
+        if (callbackQuery.Data == Constants.SupportMenu)
+        {
+
+            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+        }
+        #endregion
+
+        #region SubscribeMenu
+        if (callbackQuery.Data == Constants.SubscribeMenu)
+        {
+
+            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+        }
+        #endregion
     }
 
     Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
