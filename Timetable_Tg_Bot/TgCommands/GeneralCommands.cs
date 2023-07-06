@@ -7,7 +7,7 @@ namespace TimetableTgBot.TgCommands;
 
 public static class GeneralCommands
 {
-    public static async Task DeleteMessage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    public static async Task DeleteMessageUser(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
         try
         {
@@ -15,14 +15,12 @@ public static class GeneralCommands
         }
         catch
         {
-            Console.WriteLine("DeleteMessageAsync error in /start");
+            Console.WriteLine("DeleteMessageAsync error in DeleteMessageUser");
         }
     }
 
     public static async Task CreateMenu(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        Console.WriteLine(2);
-
         var replyKeyboardMarkup = new  InlineKeyboardMarkup(new[]
         {
             new InlineKeyboardButton[] { Constants.ImageMenu, Constants.TimeTableMenu },
