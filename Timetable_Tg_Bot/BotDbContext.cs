@@ -11,7 +11,7 @@ public class BotDbContext : DbContext
     {
         string projectPath = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
 
-        string dbFilePath = Path.Combine(projectPath, "bot.db");
+        string dbFilePath = Path.Combine(projectPath, "Db\\bot.db");
 
         optionsBuilder.UseSqlite($"Data Source={dbFilePath}");
     }
