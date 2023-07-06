@@ -2,5 +2,6 @@ bin
 obj
 .vs
 PrivateConstants.cs
-.db
-.db-shm
+bot.db
+bot.db-shm
+bot.db-wal
