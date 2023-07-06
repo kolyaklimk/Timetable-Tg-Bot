@@ -9,7 +9,7 @@ namespace TimetableTgBot;
 public class Constants
 {
     public const string TimeTableMenu = "Расписание";
-    public const string ImageMenu = "Создать изображение";
-    public const string SupportMenu = "Служба поддержки";
+    public const string ImageMenu = "Изображение";
+    public const string SupportMenu = "Поддержка";
     public const string SubscribeMenu = "Подписка";
 }
