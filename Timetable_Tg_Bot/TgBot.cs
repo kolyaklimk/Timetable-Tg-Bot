@@ -36,59 +36,76 @@ public class TgBot
         var message = update.Message;
         var callbackQuery = update.CallbackQuery;
 
-        #region /start
-        if (message?.Text == "/start")
-        {
-            var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
+        //var callbackQuery = update.CallbackQuery;
 
-            if (user == null)
+        if (update.Type == UpdateType.Message)
+        {
+            #region /start
+            if (message?.Text == "/start")
             {
-                await DbContext.Users.AddAsync(new Entities.User
+                var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
+
+                if (user == null)
                 {
-                    Id = message.From.Id,
-                    Name = message.From.FirstName,
-                    Subscription = DateTime.Now.AddDays(3)
-                }, cancellationToken);
+                    await DbContext.Users.AddAsync(new Entities.User
+                    {
+                        Id = message.From.Id,
+                        FirstName = message.From.FirstName,
+                        LastName = message.From.LastName,
+                        UserName = message.From.Username,
+                        Subscription = DateTime.Now.AddDays(3)
+                    }, cancellationToken);
 
-                await DbContext.SaveChangesAsync(cancellationToken);
+                    await DbContext.SaveChangesAsync(cancellationToken);
+                }
+
+                await GeneralCommands.CreateMenu(botClient, message, cancellationToken);
+                await GeneralCommands.DeleteMessageUser(botClient, message, cancellationToken);
+                return;
             }
-            await GeneralCommands.CreateMenu(botClient, message, cancellationToken);
-            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+            #endregion
         }
-        #endregion
-
-
-        #region TimeTableMenu
-        if (callbackQuery.Data == Constants.TimeTableMenu)
+        if (update.Type == UpdateType.CallbackQuery)
         {
+            #region TimeTableMenu
+            if (callbackQuery?.Data == Constants.TimeTableMenu)
+            {
 
-            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                return;
+            }
+            #endregion
+
+            #region ImageMenu
+            if (callbackQuery?.Data == Constants.ImageMenu)
+            {
+
+                //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                return;
+            }
+            #endregion
+
+            #region SupportMenu
+            if (callbackQuery?.Data == Constants.SupportMenu)
+            {
+
+                //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                return;
+            }
+            #endregion
+
+            #region SubscribeMenu
+            if (callbackQuery?.Data == Constants.SubscribeMenu)
+            {
+
+                //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                return;
+            }
+            #endregion
         }
-        #endregion
-
-        #region ImageMenu
-        if (callbackQuery.Data == Constants.ImageMenu)
+        else
         {
-
-            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+            await GeneralCommands.DeleteMessageUser(botClient, message, cancellationToken);
         }
-        #endregion
-
-        #region SupportMenu
-        if (callbackQuery.Data == Constants.SupportMenu)
-        {
-
-            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-        }
-        #endregion
-
-        #region SubscribeMenu
-        if (callbackQuery.Data == Constants.SubscribeMenu)
-        {
-
-            await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-        }
-        #endregion
     }
 
     Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
