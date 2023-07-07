@@ -96,7 +96,14 @@ public class TgBot
                 }
                 #endregion
 
-                #region ChooseDate
+                #region ChooseHour
+                if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseHourTimeTable))
+                {
+                    Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseHourTimeTable);
+
+                    await TimeTableCommands.ChooseHourTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                    return;
+                }
                 #endregion
 
                 #endregion
