@@ -9,4 +9,5 @@ public class WorkTime
     public TimeOnly End { get; set; }
     public DateOnly Date { get; set; }
     public bool IsBusy { get; set; }
+    public string Description { get; set; }
 }
