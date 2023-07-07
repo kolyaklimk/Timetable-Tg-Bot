@@ -123,6 +123,15 @@ public class TgBot
                         await TimeTableCommands.ChooseMinuteTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
                         return;
                     }
+
+                    // Choose is busy
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseIsBusyTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseIsBusyTimeTable);
+
+                        await TimeTableCommands.ChooseIsBusyTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
                 }
 
                 #region ImageMenu
