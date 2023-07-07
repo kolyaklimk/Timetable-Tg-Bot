@@ -39,6 +39,7 @@ public class TgBot
         {
             var message = update.Message;
             var callbackQuery = update.CallbackQuery;
+            var waitingForText = await DbContext.UserState.FirstOrDefaultAsync(arg => arg.User.Id == message.From.Id, cancellationToken);
 
             if (update.Type == UpdateType.Message)
             {
@@ -58,7 +59,10 @@ public class TgBot
                             Subscription = DateTime.Now.AddDays(3)
                         }, cancellationToken);
 
-                        await DbContext.UserState.AddAsync(new UserState { User = qwe.Entity, }, cancellationToken);
+                        await DbContext.UserState.AddAsync(new UserState
+                        {
+                            User = qwe.Entity
+                        }, cancellationToken);
 
                         await DbContext.SaveChangesAsync(cancellationToken);
                     }
@@ -68,10 +72,13 @@ public class TgBot
                     return;
                 }
 
-                if (Regex.IsMatch(message.ReplyToMessage.Text, Constants.SaveTimeTable))
+                if (waitingForText.WaitingForText)
                 {
+                    waitingForText.WaitingForText = false;
+                    await DbContext.SaveChangesAsync();
                     Match match = Regex.Match(callbackQuery?.Data, Constants.SaveTimeTable);
 
+                    await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
                     await TimeTableCommands.SaveTimeTable(match, botClient, callbackQuery, cancellationToken);
                     return;
                 }
