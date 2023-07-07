@@ -11,6 +11,18 @@ public static class TimeTableCommands
 {
     private static Dictionary<string, InlineKeyboardMarkup> SavedCalendars = new();
 
+    public static async Task MenuTimeTable(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    {
+        // Send message
+        await botClient.EditMessageTextAsync(
+            message.Chat.Id,
+            message.MessageId,
+            $"Меню расписания:",
+            replyMarkup: Constants.TimeTableMenuMarkup,
+            parseMode: ParseMode.MarkdownV2,
+            cancellationToken: cancellationToken);
+    }
+
     public static async Task ChooseDateTimeTable(Match match, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
         InlineKeyboardMarkup markup;
@@ -45,7 +57,7 @@ public static class TimeTableCommands
                 {
                     if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                     {
-                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TCH_{currentDay}_{currentDate.Month}_{currentDate.Year}");
+                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TMD_{currentDay}_{currentDate.Month}_{currentDate.Year}");
                         currentDay++;
                     }
                     else
@@ -62,10 +74,12 @@ public static class TimeTableCommands
 
             rows.Add(new InlineKeyboardButton[] {
                 currentDate.Year >= 1111 ? InlineKeyboardButton.WithCallbackData("<<",$"TCMo_{previousMonth.Month}_{previousMonth.Year}") : "\0",
-                InlineKeyboardButton.WithCallbackData("\0", "\0"),
+                Constants.Empty,
                 currentDate.Year <= 8888 ? InlineKeyboardButton.WithCallbackData(">>",$"TCMo_{nextMonth.Month}_{nextMonth.Year}") : "\0", });
-
-            rows.Add(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu), });
+            rows.Add(new InlineKeyboardButton[] {
+                InlineKeyboardButton.WithCallbackData("Назад", Constants.MenuTimeTable),
+                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+            });
 
             markup = new InlineKeyboardMarkup(rows);
             SavedCalendars.Add($"{currentDate.Month}_{currentDate.Year}", markup);
@@ -81,10 +95,40 @@ public static class TimeTableCommands
             cancellationToken: cancellationToken);
     }
 
+    public static async Task MenuDayTimeTable(Match match, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    {
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+
+        List<InlineKeyboardButton[]> rows = new List<InlineKeyboardButton[]> {
+            new InlineKeyboardButton[]{
+                InlineKeyboardButton.WithCallbackData("Удалить время","\0"),
+                InlineKeyboardButton.WithCallbackData("Выбрать время", $"TCH_{day}_{month}_{year}"),
+            },
+            new InlineKeyboardButton[]{
+                InlineKeyboardButton.WithCallbackData("Удалить всё","\0"),
+                InlineKeyboardButton.WithCallbackData("Выбрать шаблон", "\0"),
+            },
+            Constants.EmptyInlineKeyboardButton,
+            new InlineKeyboardButton[]{
+                InlineKeyboardButton.WithCallbackData("Назад", $"TCMo_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+            }
+        };
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            message.Chat.Id,
+            message.MessageId,
+            $"Вы выбрали: __*{day}/{month}/{year}*__\nВыберите час:",
+            replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: ParseMode.MarkdownV2,
+            cancellationToken: cancellationToken);
+    }
+
     public static async Task ChooseHourTimeTable(Match match, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        InlineKeyboardMarkup markup;
-
         string day = match.Groups[1].Value;
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
@@ -115,7 +159,7 @@ public static class TimeTableCommands
             },
             new InlineKeyboardButton[] {
                 InlineKeyboardButton.WithCallbackData("18",$"TCMi_18_{day}_{month}_{year}"),
-                "\0","\0","\0","\0","\0",
+                "\0","\0",Constants.Empty,"\0","\0",
                 InlineKeyboardButton.WithCallbackData("06",$"TCMi_06_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
@@ -139,8 +183,9 @@ public static class TimeTableCommands
                 InlineKeyboardButton.WithCallbackData("10",$"TCMi_10_{day}_{month}_{year}"),
                 "\0",
             },
+            new InlineKeyboardButton[] { "\0" },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Назад",$"TCMo_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад",$"TMD_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
             }
         };
@@ -157,8 +202,6 @@ public static class TimeTableCommands
 
     public static async Task ChooseMinuteTimeTable(Match match, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        InlineKeyboardMarkup markup;
-
         string hour = match.Groups[1].Value;
         string day = match.Groups[2].Value;
         string month = match.Groups[3].Value;
@@ -181,7 +224,7 @@ public static class TimeTableCommands
             },
             new InlineKeyboardButton[] {
                 InlineKeyboardButton.WithCallbackData("45",$"TCMi_45_{hour}_{day}_{month}_{year}"),
-                "\0","\0","\0",
+                "\0",Constants.Empty,"\0",
                 InlineKeyboardButton.WithCallbackData("15",$"TCMi_15_{hour}_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {

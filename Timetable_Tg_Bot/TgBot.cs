@@ -70,12 +70,6 @@ public class TgBot
             {
                 var callbackQuery = update.CallbackQuery;
 
-                if (callbackQuery.Data == "\0")
-                {
-                    await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
-                    return;
-                }
-
                 #region GoMenu
                 if (callbackQuery?.Data == Constants.GoMenu)
                 {
@@ -86,6 +80,15 @@ public class TgBot
 
                 if (callbackQuery?.Data[0] == 'T')
                 {
+                    // Menu TimeTable
+                    if (callbackQuery?.Data == Constants.MenuTimeTable)
+                    {
+
+                        await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
+
+                    // Choose day
                     if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMonthTimeTable))
                     {
                         Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMonthTimeTable);
@@ -94,6 +97,16 @@ public class TgBot
                         return;
                     }
 
+                    // Menu Day
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.MenuDayTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.MenuDayTimeTable);
+
+                        await TimeTableCommands.MenuDayTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
+
+                    // Choose hour
                     if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseHourTimeTable))
                     {
                         Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseHourTimeTable);
@@ -102,6 +115,7 @@ public class TgBot
                         return;
                     }
 
+                    // Choose minute
                     if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMinuteTimeTable))
                     {
                         Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMinuteTimeTable);
@@ -137,6 +151,8 @@ public class TgBot
                     return;
                 }
                 #endregion
+
+                await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
             }
 
             else
@@ -159,8 +175,6 @@ public class TgBot
         {
             Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now + " \nError\n");
         }
-
-        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, cancellationToken: cancellationToken);
     }
 
     Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

@@ -16,6 +16,8 @@ public class Constants
     public const string ChooseHourTimeTable = @"^TCH_(.{1,2})_(.{1,2})_(.{4})$"; // day_month_year
     public const string ChooseMinuteTimeTable = @"^TCMi_(.{2})_(.{1,2})_(.{1,2})_(.{4})$"; // hour_day_month_year
     public const string ChooseDurationTimeTable = @"^TCD_(.{2})_(.{2})_(.{1,2})_(.{1,2})_(.{4})$"; // minute_hour_day_month_year
+    public const string MenuDayTimeTable = @"^TMD_(.{1,2})_(.{1,2})_(.{4})$"; // day_month_year
+    public const string MenuTimeTable = "TM";
     #endregion
 
     #region Dates
@@ -24,15 +26,29 @@ public class Constants
     #endregion
 
     #region Other
+    public const string Empty = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    public static readonly InlineKeyboardButton[] EmptyInlineKeyboardButton = { Empty, "\0"};
+
     public static readonly InlineKeyboardMarkup MenuMarkup = new InlineKeyboardMarkup(new[]
     {
         new InlineKeyboardButton[] {
             ImageMenu,
-            InlineKeyboardButton.WithCallbackData("Расписание", $"TCMo_{DateTime.Now.Month}_{DateTime.Now.Year}") },
+            InlineKeyboardButton.WithCallbackData("Расписание", MenuTimeTable) },
         new InlineKeyboardButton[] {
             SupportMenu,
-            SubscribeMenu }
+            SubscribeMenu },
+        EmptyInlineKeyboardButton,
     });
+
+    public static readonly InlineKeyboardMarkup TimeTableMenuMarkup = new InlineKeyboardMarkup(new[]
+    {
+        new InlineKeyboardButton[] {
+            InlineKeyboardButton.WithCallbackData("Просмотр", "\0"),
+            InlineKeyboardButton.WithCallbackData("Добавить", $"TCMo_{DateTime.Now.Month}_{DateTime.Now.Year}") },
+        EmptyInlineKeyboardButton,
+        new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData("Меню", GoMenu), },
+    });
+
 
     public static readonly InlineKeyboardButton[] WeekButtons = new InlineKeyboardButton[] {
         InlineKeyboardButton.WithCallbackData("Пн", "\0"),
