@@ -5,11 +5,16 @@ namespace TimetableTgBot;
 public class Constants
 {
     #region Menu
-    public const string ChooseMonthTimeTable = @"^ChooseMonthTimeTable_(\d{1,2})_(\d{4})$";
     public const string ImageMenu = "Изображение";
     public const string SupportMenu = "Поддержка";
     public const string SubscribeMenu = "Подписка";
     public const string GoMenu = "GoMenu";
+    #endregion
+
+    #region TimeTable
+    public const string ChooseMonthTimeTable = @"^CMoTT_(\d{1,2})_(\d{4})$";
+    public const string ChooseHourTimeTable = @"^CHTT_(\d{1,2})_(\d{1,2})_(\d{4})$";
+    public const string ChooseMinuteTimeTable = @"^CMiTT_(\d{2})_(\d{1,2})_(\d{1,2})_(\d{4})$";
     #endregion
 
     #region Dates
@@ -22,11 +27,10 @@ public class Constants
     {
         new InlineKeyboardButton[] {
             ImageMenu,
-            InlineKeyboardButton.WithCallbackData("Расписание", $"ChooseMonthTimeTable_{DateTime.Now.Month}_{DateTime.Now.Year}") },
-
-            new InlineKeyboardButton[] {
-                SupportMenu,
-                SubscribeMenu }
+            InlineKeyboardButton.WithCallbackData("Расписание", $"CMoTT_{DateTime.Now.Month}_{DateTime.Now.Year}") },
+        new InlineKeyboardButton[] {
+            SupportMenu,
+            SubscribeMenu }
     });
 
     public static readonly InlineKeyboardButton[] WeekButtons = new InlineKeyboardButton[] {
