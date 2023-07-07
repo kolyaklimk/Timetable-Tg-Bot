@@ -5,6 +5,7 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TimetableTgBot.Entities;
 using TimetableTgBot.TgCommands;
 
 namespace TimetableTgBot;
@@ -32,22 +33,23 @@ public class TgBot
         );
     }
 
-    async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    async private Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         try
         {
             var message = update.Message;
+            var callbackQuery = update.CallbackQuery;
 
             if (update.Type == UpdateType.Message)
             {
-                #region /start
+                // start
                 if (message.Text == "/start")
                 {
                     var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
 
                     if (user == null)
                     {
-                        await DbContext.Users.AddAsync(new Entities.User
+                        var qwe = await DbContext.Users.AddAsync(new Entities.User
                         {
                             Id = message.From.Id,
                             FirstName = message.From.FirstName,
@@ -56,6 +58,8 @@ public class TgBot
                             Subscription = DateTime.Now.AddDays(3)
                         }, cancellationToken);
 
+                        await DbContext.UserState.AddAsync(new UserState { User = qwe.Entity, }, cancellationToken);
+
                         await DbContext.SaveChangesAsync(cancellationToken);
                     }
 
@@ -63,13 +67,18 @@ public class TgBot
                     await GeneralCommands.CreateMenu(false, botClient, message, cancellationToken);
                     return;
                 }
-                #endregion
+
+                if (Regex.IsMatch(message.ReplyToMessage.Text, Constants.SaveTimeTable))
+                {
+                    Match match = Regex.Match(callbackQuery?.Data, Constants.SaveTimeTable);
+
+                    await TimeTableCommands.SaveTimeTable(match, botClient, callbackQuery, cancellationToken);
+                    return;
+                }
             }
 
             if (update.Type == UpdateType.CallbackQuery)
             {
-                var callbackQuery = update.CallbackQuery;
-
                 #region GoMenu
                 if (callbackQuery?.Data == Constants.GoMenu)
                 {
@@ -132,6 +141,24 @@ public class TgBot
                         await TimeTableCommands.ChooseIsBusyTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
                         return;
                     }
+
+                    // Add description
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.AddDescriptionTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.AddDescriptionTimeTable);
+
+                        await TimeTableCommands.AddDescriptionTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
+
+                    // Save TimeTable
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.SaveTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.SaveTimeTable);
+
+                        await TimeTableCommands.SaveTimeTable(match, botClient, callbackQuery, cancellationToken);
+                        return;
+                    }
                 }
 
                 #region ImageMenu
@@ -178,7 +205,7 @@ public class TgBot
         catch (Exception ex)
         {
             Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now);
-            Console.WriteLine($"{ex}\n\n");
+            Console.WriteLine($"{ex}\n");
         }
         catch
         {
@@ -186,7 +213,7 @@ public class TgBot
         }
     }
 
-    Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    private Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
         var ErrorMessage = exception switch
         {
