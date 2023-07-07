@@ -84,39 +84,32 @@ public class TgBot
                 }
                 #endregion
 
-                #region TimeTable
-
-                #region ChooseDate
-                if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMonthTimeTable))
+                if (callbackQuery?.Data[0] == 'T')
                 {
-                    Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMonthTimeTable);
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMonthTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMonthTimeTable);
 
-                    await TimeTableCommands.ChooseDateTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
-                    return;
+                        await TimeTableCommands.ChooseDateTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
+
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseHourTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseHourTimeTable);
+
+                        await TimeTableCommands.ChooseHourTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
+
+                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMinuteTimeTable))
+                    {
+                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMinuteTimeTable);
+
+                        await TimeTableCommands.ChooseMinuteTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        return;
+                    }
                 }
-                #endregion
-
-                #region ChooseHour
-                if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseHourTimeTable))
-                {
-                    Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseHourTimeTable);
-
-                    await TimeTableCommands.ChooseHourTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
-                    return;
-                }
-                #endregion
-
-                #region ChooseMinute
-                if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMinuteTimeTable))
-                {
-                    Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMinuteTimeTable);
-
-                    await TimeTableCommands.ChooseMinuteTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
-                    return;
-                }
-                #endregion
-
-                #endregion
 
                 #region ImageMenu
                 if (callbackQuery?.Data == Constants.ImageMenu)

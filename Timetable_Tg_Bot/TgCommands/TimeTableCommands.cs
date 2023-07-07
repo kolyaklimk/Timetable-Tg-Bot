@@ -45,7 +45,7 @@ public static class TimeTableCommands
                 {
                     if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                     {
-                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"CHTT_{currentDay}_{currentDate.Month}_{currentDate.Year}");
+                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TCH_{currentDay}_{currentDate.Month}_{currentDate.Year}");
                         currentDay++;
                     }
                     else
@@ -61,9 +61,9 @@ public static class TimeTableCommands
             var nextMonth = currentDate.AddMonths(1);
 
             rows.Add(new InlineKeyboardButton[] {
-                currentDate.Year >= 1111 ? InlineKeyboardButton.WithCallbackData("<<",$"CMoTT_{previousMonth.Month}_{previousMonth.Year}") : "\0",
+                currentDate.Year >= 1111 ? InlineKeyboardButton.WithCallbackData("<<",$"TCMo_{previousMonth.Month}_{previousMonth.Year}") : "\0",
                 InlineKeyboardButton.WithCallbackData("\0", "\0"),
-                currentDate.Year <= 8888 ? InlineKeyboardButton.WithCallbackData(">>",$"CMoTT_{nextMonth.Month}_{nextMonth.Year}") : "\0", });
+                currentDate.Year <= 8888 ? InlineKeyboardButton.WithCallbackData(">>",$"TCMo_{nextMonth.Month}_{nextMonth.Year}") : "\0", });
 
             rows.Add(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu), });
 
@@ -94,53 +94,53 @@ public static class TimeTableCommands
         {
             new InlineKeyboardButton[] {
                 "\0",
-                InlineKeyboardButton.WithCallbackData("22",$"CMiTT_22_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("23",$"CMiTT_23_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("00",$"CMiTT_00_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("01",$"CMiTT_01_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("02",$"CMiTT_02_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("22",$"TCMi_22_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("23",$"TCMi_23_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("00",$"TCMi_00_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("01",$"TCMi_01_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("02",$"TCMi_02_{day}_{month}_{year}"),
                 "\0",
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("20",$"CMiTT_20_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("21",$"CMiTT_21_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("20",$"TCMi_20_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("21",$"TCMi_21_{day}_{month}_{year}"),
                 "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("03",$"CMiTT_03_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("04",$"CMiTT_04_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("03",$"TCMi_03_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("04",$"TCMi_04_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("19",$"CMiTT_19_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("19",$"TCMi_19_{day}_{month}_{year}"),
                 "\0","\0","\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("05",$"CMiTT_05_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("05",$"TCMi_05_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("18",$"CMiTT_18_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("18",$"TCMi_18_{day}_{month}_{year}"),
                 "\0","\0","\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("06",$"CMiTT_06_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("06",$"TCMi_06_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("17",$"CMiTT_17_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("17",$"TCMi_17_{day}_{month}_{year}"),
                 "\0","\0","\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("07",$"CMiTT_07_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("07",$"TCMi_07_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("16",$"CMiTT_16_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("15",$"CMiTT_15_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("16",$"TCMi_16_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("15",$"TCMi_15_{day}_{month}_{year}"),
                 "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("09",$"CMiTT_09_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("08",$"CMiTT_08_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("09",$"TCMi_09_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("08",$"TCMi_08_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
                 "\0",
-                InlineKeyboardButton.WithCallbackData("14",$"CMiTT_14_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("13",$"CMiTT_13_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("12",$"CMiTT_12_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("11",$"CMiTT_11_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("10",$"CMiTT_10_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("14",$"TCMi_14_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("13",$"TCMi_13_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("12",$"TCMi_12_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("11",$"TCMi_11_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("10",$"TCMi_10_{day}_{month}_{year}"),
                 "\0",
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Назад",$"CMoTT_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад",$"TCMo_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
             }
         };
@@ -169,35 +169,35 @@ public static class TimeTableCommands
         {
             new InlineKeyboardButton[] {
                 "\0",
-                InlineKeyboardButton.WithCallbackData("55",$"CMiTT_55_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("00",$"CMiTT_00_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("05",$"CMiTT_05_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("55",$"TCMi_55_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("00",$"TCMi_00_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("05",$"TCMi_05_{hour}_{day}_{month}_{year}"),
                 "\0",
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("50",$"CMiTT_50_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("50",$"TCMi_50_{hour}_{day}_{month}_{year}"),
                 "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("10",$"CMiTT_10_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("10",$"TCMi_10_{hour}_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("45",$"CMiTT_45_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("45",$"TCMi_45_{hour}_{day}_{month}_{year}"),
                 "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("15",$"CMiTT_15_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("15",$"TCMi_15_{hour}_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("40",$"CMiTT_40_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("40",$"TCMi_40_{hour}_{day}_{month}_{year}"),
                 "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("20",$"CMiTT_20_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("20",$"TCMi_20_{hour}_{day}_{month}_{year}"),
             },
             new InlineKeyboardButton[] {
                 "\0",
-                InlineKeyboardButton.WithCallbackData("35",$"CMiTT_55_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("30",$"CMiTT_30_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("25",$"CMiTT_25_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("35",$"TCMi_55_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("30",$"TCMi_30_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("25",$"TCMi_25_{hour}_{day}_{month}_{year}"),
                 "\0",
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Назад",$"CHTT_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад",$"TCH_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
             }
         };
