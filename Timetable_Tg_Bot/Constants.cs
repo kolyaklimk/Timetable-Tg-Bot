@@ -12,9 +12,10 @@ public class Constants
     #endregion
 
     #region TimeTable
-    public const string ChooseMonthTimeTable = @"^CMoTT_(\d{1,2})_(\d{4})$";
-    public const string ChooseHourTimeTable = @"^CHTT_(\d{1,2})_(\d{1,2})_(\d{4})$";
-    public const string ChooseMinuteTimeTable = @"^CMiTT_(\d{2})_(\d{1,2})_(\d{1,2})_(\d{4})$";
+    public const string ChooseMonthTimeTable = @"^CMoTT_(.{1,2})_(.{4})$"; // month_year
+    public const string ChooseHourTimeTable = @"^CHTT_(.{1,2})_(.{1,2})_(.{4})$"; // day_month_year
+    public const string ChooseMinuteTimeTable = @"^CMiTT_(.{2})_(.{1,2})_(.{1,2})_(.{4})$"; // hour_day_month_year
+    public const string ChooseDurationTimeTable = @"^CDTT_(.{2})_(.{2})_(.{1,2})_(.{1,2})_(.{4})$"; // minute_hour_day_month_year
     #endregion
 
     #region Dates

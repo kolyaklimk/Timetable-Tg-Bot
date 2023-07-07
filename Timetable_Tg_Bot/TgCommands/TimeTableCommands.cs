@@ -154,4 +154,63 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2,
             cancellationToken: cancellationToken);
     }
+
+    public static async Task ChooseMinuteTimeTable(Match match, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    {
+        InlineKeyboardMarkup markup;
+
+        string hour = match.Groups[1].Value;
+        string day = match.Groups[2].Value;
+        string month = match.Groups[3].Value;
+        string year = match.Groups[4].Value;
+
+        // Hours
+        List<InlineKeyboardButton[]> rows = new List<InlineKeyboardButton[]>
+        {
+            new InlineKeyboardButton[] {
+                "\0",
+                InlineKeyboardButton.WithCallbackData("55",$"CMiTT_55_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("00",$"CMiTT_00_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("05",$"CMiTT_05_{hour}_{day}_{month}_{year}"),
+                "\0",
+            },
+            new InlineKeyboardButton[] {
+                InlineKeyboardButton.WithCallbackData("50",$"CMiTT_50_{hour}_{day}_{month}_{year}"),
+                "\0","\0","\0",
+                InlineKeyboardButton.WithCallbackData("10",$"CMiTT_10_{hour}_{day}_{month}_{year}"),
+            },
+            new InlineKeyboardButton[] {
+                InlineKeyboardButton.WithCallbackData("45",$"CMiTT_45_{hour}_{day}_{month}_{year}"),
+                "\0","\0","\0",
+                InlineKeyboardButton.WithCallbackData("15",$"CMiTT_15_{hour}_{day}_{month}_{year}"),
+            },
+            new InlineKeyboardButton[] {
+                InlineKeyboardButton.WithCallbackData("40",$"CMiTT_40_{hour}_{day}_{month}_{year}"),
+                "\0","\0","\0",
+                InlineKeyboardButton.WithCallbackData("20",$"CMiTT_20_{hour}_{day}_{month}_{year}"),
+            },
+            new InlineKeyboardButton[] {
+                "\0",
+                InlineKeyboardButton.WithCallbackData("35",$"CMiTT_55_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("30",$"CMiTT_30_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("25",$"CMiTT_25_{hour}_{day}_{month}_{year}"),
+                "\0",
+            },
+            new InlineKeyboardButton[] {
+                InlineKeyboardButton.WithCallbackData("Назад",$"CHTT_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+            }
+        };
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            message.Chat.Id,
+            message.MessageId,
+            "Вы выбрали:\n" +
+            $"Дата: __*{day}/{month}/{year}*__\n" +
+            $"Час: __*{hour}*__",
+            replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: ParseMode.MarkdownV2,
+            cancellationToken: cancellationToken);
+    }
 }

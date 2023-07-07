@@ -106,6 +106,16 @@ public class TgBot
                 }
                 #endregion
 
+                #region ChooseMinute
+                if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMinuteTimeTable))
+                {
+                    Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMinuteTimeTable);
+
+                    await TimeTableCommands.ChooseMinuteTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                    return;
+                }
+                #endregion
+
                 #endregion
 
                 #region ImageMenu
@@ -139,6 +149,7 @@ public class TgBot
             else
             {
                 await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                return;
             }
         }
         catch (ApiRequestException apiRequestException)
@@ -155,6 +166,8 @@ public class TgBot
         {
             Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now + " \nError\n");
         }
+
+        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, cancellationToken: cancellationToken);
     }
 
     Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
