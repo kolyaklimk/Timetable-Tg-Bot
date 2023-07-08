@@ -53,7 +53,7 @@ public class TgBot
                             FirstName = message.From.FirstName,
                             LastName = message.From.LastName,
                             UserName = message.From.Username,
-                            Subscription = DateTime.Now.AddDays(3)
+                            Subscription = message.Date.AddDays(3)
                         });
 
                         await DbContext.UserState.AddAsync(new UserState { UserId = message.From.Id, });
@@ -189,6 +189,7 @@ public class TgBot
                 #endregion
 
                 await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                return;
             }
 
             await GeneralCommands.DeleteMessage(botClient, message);

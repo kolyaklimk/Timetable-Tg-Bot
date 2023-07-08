@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -14,12 +13,21 @@ public static class TimeTableCommands
 
     public static async Task MenuTimeTable(ITelegramBotClient botClient, Message message)
     {
+        InlineKeyboardMarkup TimeTableMenuMarkup = new InlineKeyboardMarkup(new[]
+        {
+            new InlineKeyboardButton[] {
+                InlineKeyboardButton.WithCallbackData("Просмотр", "\0"),
+                InlineKeyboardButton.WithCallbackData("Добавить", $"TA_{message.Date.Month.ToString("00")}_{message.Date.Year}") },
+            Constants.EmptyInlineKeyboardButton,
+            new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu), },
+        });
+        
         // Send message
         await botClient.EditMessageTextAsync(
             message.Chat.Id,
             message.MessageId,
             $"Меню расписания:",
-            replyMarkup: Constants.TimeTableMenuMarkup,
+            replyMarkup: TimeTableMenuMarkup,
             parseMode: ParseMode.MarkdownV2);
     }
 
@@ -27,16 +35,18 @@ public static class TimeTableCommands
     {
         Match match = Regex.Match(callbackQuery.Data, Constants.ChooseMonthTimeTable);
 
+        string month = match.Groups[1].Value;
+        string year = match.Groups[2].Value;
+
         InlineKeyboardMarkup markup;
 
-        if (SavedCalendars.ContainsKey($"{match.Groups[1].Value}_{match.Groups[2].Value}"))
+        if (SavedCalendars.ContainsKey($"{month}_{year}"))
         {
-            markup = SavedCalendars[$"{match.Groups[1].Value}_{match.Groups[2].Value}"];
+            markup = SavedCalendars[$"{month}_{year}"];
         }
         else
         {
-            #region Create calendar
-            DateTime currentDate = DateTime.Parse($"1/{match.Groups[1].Value}/{match.Groups[2].Value}");
+            DateTime currentDate = DateTime.ParseExact($"01/{month}/{year}", Constants.dateFormat, null);
             int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
             int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
             var monthName = currentDate.ToString("MMMM", new CultureInfo("ru-RU"));
@@ -59,7 +69,7 @@ public static class TimeTableCommands
                 {
                     if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                     {
-                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG_{currentDay}_{currentDate.Month}_{currentDate.Year}");
+                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG_{currentDay.ToString("00")}_{month}_{year}");
                         currentDay++;
                     }
                     else
@@ -75,17 +85,17 @@ public static class TimeTableCommands
             var nextMonth = currentDate.AddMonths(1);
 
             rows.Add(new InlineKeyboardButton[] {
-                currentDate.Year >=  DateTime.Now.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TA_{previousMonth.Month}_{previousMonth.Year}") : "\0",
+                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TA_{previousMonth.Month.ToString("00")}_{previousMonth.Year}") : "\0",
                 Constants.Empty,
-                currentDate.Year <= DateTime.Now.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA_{nextMonth.Month}_{nextMonth.Year}") : "\0", });
+                currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA_{nextMonth.Month.ToString("00")}_{nextMonth.Year}") : "\0",
+            });
             rows.Add(new InlineKeyboardButton[] {
                 InlineKeyboardButton.WithCallbackData("Назад", Constants.MenuTimeTable),
                 InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
             });
 
             markup = new InlineKeyboardMarkup(rows);
-            SavedCalendars.Add($"{currentDate.Month}_{currentDate.Year}", markup);
-            #endregion
+            SavedCalendars.Add($"{month}_{year}", markup);
         }
 
         // Send message
@@ -104,7 +114,7 @@ public static class TimeTableCommands
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        DateTime currentDate = DateTime.Parse($"{day}/{month}/{year}");
+        DateTime currentDate = DateTime.ParseExact($"{day}/{month}/{year}", Constants.dateFormat, null);
 
         // previous and next buttons
         var previousMonth = currentDate.AddDays(-1);
@@ -120,9 +130,9 @@ public static class TimeTableCommands
                 InlineKeyboardButton.WithCallbackData("Выбрать шаблон", "\0"),
             },
             new InlineKeyboardButton[]{
-                currentDate.Year >=  DateTime.Now.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TG_{previousMonth.Day}_{previousMonth.Month}_{previousMonth.Year}") : "\0",
+                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TG_{previousMonth.Day.ToString("00")}_{previousMonth.Month.ToString("00")}_{previousMonth.Year}") : "\0",
                 Constants.Empty,
-                currentDate.Year <=  DateTime.Now.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TG_{nextMonth.Day}_{nextMonth.Month}_{nextMonth.Year}") : "\0",
+                currentDate.Year <=  callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TG_{nextMonth.Day.ToString("00")}_{nextMonth.Month.ToString("00")}_{nextMonth.Year}") : "\0",
             },
             new InlineKeyboardButton[]{
                 InlineKeyboardButton.WithCallbackData("Назад", $"TA_{month}_{year}"),
@@ -318,7 +328,7 @@ public static class TimeTableCommands
         List<InlineKeyboardButton[]> rows = new List<InlineKeyboardButton[]> {
             new InlineKeyboardButton[]{
                 InlineKeyboardButton.WithCallbackData(
-                    descrption != null ? $"Сохранить" : "Сохранить без изменений",$"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}_"),
+                    descrption != null ? $"Сохранить" : "Сохранить без изменений",$"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}_{descrption}"),
             },
             Constants.EmptyInlineKeyboardButton,
             new InlineKeyboardButton[]{
@@ -355,8 +365,8 @@ public static class TimeTableCommands
 
         await dbContext.WorkTimes.AddAsync(new Entities.WorkTime
         {
-            Date = DateOnly.Parse($"{day}/{month}/{year}"),
-            Start = TimeOnly.Parse($"{hour}:{minute}"),
+            Date = DateOnly.ParseExact($"{day}/{month}/{year}", Constants.dateFormat, null),
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", Constants.timeFormat, null),
             IsBusy = "1" == isBusy,
             UserId = callbackQuery.From.Id,
             Description = description
