@@ -47,7 +47,7 @@ public class TgBot
 
                     if (user == null)
                     {
-                        var qwe = await DbContext.Users.AddAsync(new Entities.User
+                        await DbContext.Users.AddAsync(new Entities.User
                         {
                             Id = message.From.Id,
                             FirstName = message.From.FirstName,
@@ -56,12 +56,16 @@ public class TgBot
                             Subscription = DateTime.Now.AddDays(3)
                         });
 
-                        await DbContext.UserState.AddAsync(new UserState { User = qwe.Entity });
-
+                        await DbContext.UserState.AddAsync(new UserState { UserId = message.From.Id, });
+                        await DbContext.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        userState.WaitingForText = false;
                         await DbContext.SaveChangesAsync();
                     }
 
-                    await GeneralCommands.DeleteMessage(botClient, message);
+                    await GeneralCommands.DeleteMessage(botClient, message, true);
                     await GeneralCommands.CreateMenu(false, botClient, message);
                     return;
                 }
@@ -149,7 +153,7 @@ public class TgBot
                     // Save TimeTable
                     if (callbackQuery?.Data[1] == 'F')
                     {
-                        await TimeTableCommands.SaveTimeTable(callbackQuery, botClient);
+                        await TimeTableCommands.SaveTimeTable(DbContext, callbackQuery, botClient);
 
                         userState.WaitingForText = false;
                         await DbContext.SaveChangesAsync();

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -340,7 +341,7 @@ public static class TimeTableCommands
         return messageBot.MessageId;
     }
 
-    public static async Task SaveTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task SaveTimeTable(BotDbContext dbContext, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, Constants.SaveTimeTable);
 
@@ -352,8 +353,18 @@ public static class TimeTableCommands
         string year = match.Groups[6].Value;
         string description = match.Groups[7].Value;
 
-        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false);
+        await dbContext.WorkTimes.AddAsync(new Entities.WorkTime
+        {
+            Date = DateOnly.Parse($"{day}/{month}/{year}"),
+            Start = TimeOnly.Parse($"{hour}:{minute}"),
+            IsBusy = "1" == isBusy,
+            UserId = callbackQuery.From.Id,
+            Description = description
+        });
+
+        await dbContext.SaveChangesAsync();
 
         // сохранить в бд поменять везде на строки Match и вызвать MenuDay
+        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false);
     }
 }
