@@ -191,25 +191,16 @@ public class TgBot
                 await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
             }
 
-            else
-            {
-                await GeneralCommands.DeleteMessage(botClient, message);
-                return;
-            }
+            await GeneralCommands.DeleteMessage(botClient, message);
         }
         catch (ApiRequestException apiRequestException)
         {
-            Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now);
-            Console.WriteLine($"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}\n");
+            Console.WriteLine($"{update.Message?.From?.FirstName} {update.Message?.From?.Username} {DateTime.Now}\n");
+            Console.WriteLine($"Telegram API Error: [{apiRequestException.ErrorCode}] - {apiRequestException.Message}\n");
         }
         catch (Exception ex)
         {
-            Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now);
-            Console.WriteLine($"{ex}\n");
-        }
-        catch
-        {
-            Console.WriteLine(update.Message?.From?.FirstName + " " + update.Message?.From?.Username + " " + DateTime.Now + " \nError\n");
+            Console.WriteLine($"{update.Message?.From?.FirstName} {update.Message?.From?.Username} {DateTime.Now}\n{ex}\n");
         }
     }
 
