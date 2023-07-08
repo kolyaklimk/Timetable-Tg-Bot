@@ -35,9 +35,8 @@ public class TgBot
         {
             var message = update.Message;
             var callbackQuery = update.CallbackQuery;
-            var waitingForText = await DbContext.UserState.FirstOrDefaultAsync(
+            var userState = await DbContext.UserState.FirstOrDefaultAsync(
                 arg => arg.User.Id == (message != null ? message.From.Id : callbackQuery.From.Id));
-
 
             if (update.Type == UpdateType.Message)
             {
@@ -67,10 +66,10 @@ public class TgBot
                     return;
                 }
 
-                if (waitingForText.WaitingForText)
+                if (userState.WaitingForText)
                 {
                     await GeneralCommands.DeleteMessage(botClient, message);
-                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, waitingForText.Buffer1, botClient, message.Chat, (int)waitingForText.Buffer2);
+                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, userState.Buffer1, botClient, message.Chat, (int)userState.Buffer2);
                     return;
                 }
             }
@@ -78,9 +77,9 @@ public class TgBot
             if (update.Type == UpdateType.CallbackQuery)
             {
                 // Check WaitingForText
-                if (waitingForText.WaitingForText)
+                if (userState.WaitingForText)
                 {
-                    waitingForText.WaitingForText = false;
+                    userState.WaitingForText = false;
                     await DbContext.SaveChangesAsync();
                 }
 
@@ -140,9 +139,9 @@ public class TgBot
                     {
                         await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
 
-                        waitingForText.WaitingForText = true;
-                        waitingForText.Buffer1 = callbackQuery.Data;
-                        waitingForText.Buffer2 = callbackQuery.Message.MessageId;
+                        userState.WaitingForText = true;
+                        userState.Buffer1 = callbackQuery.Data;
+                        userState.Buffer2 = callbackQuery.Message.MessageId;
                         await DbContext.SaveChangesAsync();
                         return;
                     }
@@ -152,7 +151,7 @@ public class TgBot
                     {
                         await TimeTableCommands.SaveTimeTable(callbackQuery, botClient);
 
-                        waitingForText.WaitingForText = false;
+                        userState.WaitingForText = false;
                         await DbContext.SaveChangesAsync();
                         return;
                     }
