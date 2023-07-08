@@ -5,12 +5,12 @@ namespace TimetableTgBot.TgCommands;
 
 public static class GeneralCommands
 {
-    public static async Task DeleteMessage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    public static async Task DeleteMessage(ITelegramBotClient botClient, Message message)
     {
-        await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+        await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId);
     }
 
-    public static async Task CreateMenu(bool edit, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    public static async Task CreateMenu(bool edit, ITelegramBotClient botClient, Message message)
     {
         if (edit)
         {
@@ -18,16 +18,14 @@ public static class GeneralCommands
                 message.Chat.Id,
                 message.MessageId,
                 "Меню:",
-                replyMarkup: Constants.MenuMarkup,
-                cancellationToken: cancellationToken);
+                replyMarkup: Constants.MenuMarkup);
         }
         else
         {
             await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Меню:",
-                replyMarkup: Constants.MenuMarkup,
-                cancellationToken: cancellationToken);
+                replyMarkup: Constants.MenuMarkup);
         }
     }
 }

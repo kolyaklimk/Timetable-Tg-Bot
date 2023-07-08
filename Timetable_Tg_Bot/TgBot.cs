@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -17,8 +16,6 @@ public class TgBot
     {
         var botClient = new TelegramBotClient(PrivateConstants.TOKEN_TG_BOT);
 
-        using CancellationTokenSource cts = new();
-
         // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
         ReceiverOptions receiverOptions = new()
         {
@@ -28,8 +25,7 @@ public class TgBot
         botClient.StartReceiving(
             updateHandler: HandleUpdateAsync,
             pollingErrorHandler: HandlePollingErrorAsync,
-            receiverOptions: receiverOptions,
-            cancellationToken: cts.Token
+            receiverOptions: receiverOptions
         );
     }
 
@@ -40,7 +36,7 @@ public class TgBot
             var message = update.Message;
             var callbackQuery = update.CallbackQuery;
             var waitingForText = await DbContext.UserState.FirstOrDefaultAsync(
-                arg => arg.User.Id == (message != null ? message.From.Id : callbackQuery.From.Id), cancellationToken);
+                arg => arg.User.Id == (message != null ? message.From.Id : callbackQuery.From.Id));
 
 
             if (update.Type == UpdateType.Message)
@@ -48,7 +44,7 @@ public class TgBot
                 // start
                 if (message.Text == "/start")
                 {
-                    var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id, cancellationToken);
+                    var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id);
 
                     if (user == null)
                     {
@@ -59,118 +55,102 @@ public class TgBot
                             LastName = message.From.LastName,
                             UserName = message.From.Username,
                             Subscription = DateTime.Now.AddDays(3)
-                        }, cancellationToken);
+                        });
 
-                        await DbContext.UserState.AddAsync(new UserState
-                        {
-                            User = qwe.Entity
-                        }, cancellationToken);
+                        await DbContext.UserState.AddAsync(new UserState { User = qwe.Entity });
 
-                        await DbContext.SaveChangesAsync(cancellationToken);
+                        await DbContext.SaveChangesAsync();
                     }
 
-                    await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-                    await GeneralCommands.CreateMenu(false, botClient, message, cancellationToken);
+                    await GeneralCommands.DeleteMessage(botClient, message);
+                    await GeneralCommands.CreateMenu(false, botClient, message);
                     return;
                 }
 
                 if (waitingForText.WaitingForText)
                 {
-                    Console.WriteLine(waitingForText.Buffer1);
-                    Match match = Regex.Match(waitingForText.Buffer1, Constants.AddDescriptionTimeTable);
-
-                    await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
-                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, match, botClient, message.Chat.Id, (int)waitingForText.Buffer2, cancellationToken);
+                    await GeneralCommands.DeleteMessage(botClient, message);
+                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, waitingForText.Buffer1, botClient, message.Chat, (int)waitingForText.Buffer2);
                     return;
                 }
             }
 
             if (update.Type == UpdateType.CallbackQuery)
             {
-                #region GoMenu
+                // Check WaitingForText
+                if (waitingForText.WaitingForText)
+                {
+                    waitingForText.WaitingForText = false;
+                    await DbContext.SaveChangesAsync();
+                }
+
+                // Go main Menu
                 if (callbackQuery?.Data == Constants.GoMenu)
                 {
-                    await GeneralCommands.CreateMenu(true, botClient, callbackQuery.Message, cancellationToken);
+                    await GeneralCommands.CreateMenu(true, botClient, callbackQuery.Message);
                     return;
                 }
-                #endregion
 
                 if (callbackQuery?.Data[0] == 'T')
                 {
                     // Menu TimeTable
-                    if (callbackQuery?.Data == Constants.MenuTimeTable)
+                    if (callbackQuery?.Data[1] == 'H')
                     {
-
-                        await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message, cancellationToken);
+                        await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
                         return;
                     }
 
-                    // Choose day
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMonthTimeTable))
+                    // Choose Date
+                    if (callbackQuery?.Data[1] == 'A')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMonthTimeTable);
-
-                        await TimeTableCommands.ChooseDateTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);
                         return;
                     }
 
                     // Menu Day
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.MenuDayTimeTable))
+                    if (callbackQuery?.Data[1] == 'G')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.MenuDayTimeTable);
-
-                        await TimeTableCommands.MenuDayTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        await TimeTableCommands.MenuDayTimeTable(callbackQuery, botClient);
                         return;
                     }
 
                     // Choose hour
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseHourTimeTable))
+                    if (callbackQuery?.Data[1] == 'B')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseHourTimeTable);
-
-                        await TimeTableCommands.ChooseHourTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        await TimeTableCommands.ChooseHourTimeTable(callbackQuery, botClient);
                         return;
                     }
 
                     // Choose minute
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseMinuteTimeTable))
+                    if (callbackQuery?.Data[1] == 'C')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMinuteTimeTable);
-
-                        await TimeTableCommands.ChooseMinuteTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        await TimeTableCommands.ChooseMinuteTimeTable(callbackQuery, botClient);
                         return;
                     }
 
                     // Choose is busy
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.ChooseIsBusyTimeTable))
+                    if (callbackQuery?.Data[1] == 'D')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseIsBusyTimeTable);
-
-                        await TimeTableCommands.ChooseIsBusyTimeTable(match, botClient, callbackQuery.Message, cancellationToken);
+                        await TimeTableCommands.ChooseIsBusyTimeTable(callbackQuery, botClient);
                         return;
                     }
 
                     // Add description
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.AddDescriptionTimeTable))
+                    if (callbackQuery?.Data[1] == 'E')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.AddDescriptionTimeTable);
+                        await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
 
-                        await TimeTableCommands.AddDescriptionTimeTable(null, match, botClient,callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId, cancellationToken);
-                        Console.WriteLine(callbackQuery.Data);
                         waitingForText.WaitingForText = true;
                         waitingForText.Buffer1 = callbackQuery.Data;
                         waitingForText.Buffer2 = callbackQuery.Message.MessageId;
                         await DbContext.SaveChangesAsync();
-                        Console.WriteLine(waitingForText.Buffer1);
                         return;
                     }
 
                     // Save TimeTable
-                    if (Regex.IsMatch(callbackQuery?.Data, Constants.SaveTimeTable))
+                    if (callbackQuery?.Data[1] == 'F')
                     {
-                        Match match = Regex.Match(callbackQuery?.Data, Constants.SaveTimeTable);
-
-                        await TimeTableCommands.SaveTimeTable(match, botClient, callbackQuery.Id, cancellationToken);
+                        await TimeTableCommands.SaveTimeTable(callbackQuery, botClient);
 
                         waitingForText.WaitingForText = false;
                         await DbContext.SaveChangesAsync();
@@ -182,7 +162,7 @@ public class TgBot
                 if (callbackQuery?.Data == Constants.ImageMenu)
                 {
 
-                    //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    //await GeneralCommands.DeleteMessage(botClient, message);
                     return;
                 }
                 #endregion
@@ -191,7 +171,7 @@ public class TgBot
                 if (callbackQuery?.Data == Constants.SupportMenu)
                 {
 
-                    //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    //await GeneralCommands.DeleteMessage(botClient, message);
                     return;
                 }
                 #endregion
@@ -200,17 +180,17 @@ public class TgBot
                 if (callbackQuery?.Data == Constants.SubscribeMenu)
                 {
 
-                    //await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                    //await GeneralCommands.DeleteMessage(botClient, message);
                     return;
                 }
                 #endregion
 
-                await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: cancellationToken);
+                await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
             }
 
             else
             {
-                await GeneralCommands.DeleteMessage(botClient, message, cancellationToken);
+                await GeneralCommands.DeleteMessage(botClient, message);
                 return;
             }
         }
