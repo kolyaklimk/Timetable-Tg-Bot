@@ -299,7 +299,7 @@ public static class TimeTableCommands
             cancellationToken: cancellationToken);
     }
 
-    public static async Task<int> AddDescriptionTimeTable(Match match, ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    public static async Task<int> AddDescriptionTimeTable(string? descrption, Match match, ITelegramBotClient botClient,long chatId, int messageId, CancellationToken cancellationToken)
     {
         string isBusy = match.Groups[1].Value;
         string minute = match.Groups[2].Value;
@@ -310,7 +310,8 @@ public static class TimeTableCommands
 
         List<InlineKeyboardButton[]> rows = new List<InlineKeyboardButton[]> {
             new InlineKeyboardButton[]{
-                InlineKeyboardButton.WithCallbackData("Сохранить без описания",$"TS_{isBusy}_{minute}_{hour}_{day}_{month}_{year}_"),
+                InlineKeyboardButton.WithCallbackData(
+                    descrption != null ? $"Сохранить" : "Сохранить без изменений",$"TS_{isBusy}_{minute}_{hour}_{day}_{month}_{year}_"),
             },
             Constants.EmptyInlineKeyboardButton,
             new InlineKeyboardButton[]{
@@ -321,12 +322,12 @@ public static class TimeTableCommands
 
         // Send message
         var messageBot = await botClient.EditMessageTextAsync(
-            message.Chat.Id,
-            message.MessageId,
-            $"Напишите, если хотите что\\-то добавить к этой записи :\\)" +
+            chatId,
+            messageId,
+            $"Напишите, если хотите изменить описание к этой записи :\\)" +
             $"Дата: {day}/{month}/{year}\n" +
             $"Время: {hour}:{minute}\n" +
-            $"Запись: {"1" == isBusy}",
+            $"Запись: {"1" == isBusy}" + (descrption != null ? $"\nОписание: {descrption}" : ""),
             replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: ParseMode.MarkdownV2,
             cancellationToken: cancellationToken);
@@ -334,7 +335,7 @@ public static class TimeTableCommands
         return messageBot.MessageId;
     }
 
-    public static async Task SaveTimeTable(Match match, ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    public static async Task SaveTimeTable(Match match, ITelegramBotClient botClient, string id, CancellationToken cancellationToken)
     {
         string isBusy = match.Groups[1].Value;
         string minute = match.Groups[2].Value;
@@ -344,7 +345,7 @@ public static class TimeTableCommands
         string year = match.Groups[6].Value;
         string description = match.Groups[7].Value;
 
-        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false, cancellationToken: cancellationToken);
+        await botClient.AnswerCallbackQueryAsync(id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false, cancellationToken: cancellationToken);
 
         // поменять везде на строки Match и вызвать MenuDay
     }
