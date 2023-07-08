@@ -21,7 +21,7 @@ public static class TimeTableCommands
             Constants.EmptyInlineKeyboardButton,
             new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu), },
         });
-        
+
         // Send message
         await botClient.EditMessageTextAsync(
             message.Chat.Id,
@@ -46,7 +46,7 @@ public static class TimeTableCommands
         }
         else
         {
-            DateTime currentDate = DateTime.ParseExact($"01/{month}/{year}", Constants.dateFormat, null);
+            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", Constants.dateFormat, null);
             int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
             int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
             var monthName = currentDate.ToString("MMMM", new CultureInfo("ru-RU"));
@@ -106,7 +106,7 @@ public static class TimeTableCommands
             replyMarkup: markup);
     }
 
-    public static async Task MenuDayTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task MenuDayTimeTable(BotDbContext dbContext, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery.Data, Constants.MenuDayTimeTable);
 
@@ -114,7 +114,17 @@ public static class TimeTableCommands
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        DateTime currentDate = DateTime.ParseExact($"{day}/{month}/{year}", Constants.dateFormat, null);
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", Constants.dateFormat, null);
+
+        var dayTimetable = dbContext.WorkTimes.
+            Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate).
+            OrderBy(arg => arg.Start);
+
+        string listTimeTable="";
+        foreach(var item in dayTimetable)
+        {
+            listTimeTable += $"{item.Start.Hour.ToString("00")}:{item.Start.Minute.ToString("00")} \\- {item.IsBusy} \\- {item.Description}\n";
+        }
 
         // previous and next buttons
         var previousMonth = currentDate.AddDays(-1);
@@ -144,7 +154,7 @@ public static class TimeTableCommands
         await botClient.EditMessageTextAsync(
             callbackQuery.Message.Chat.Id,
             callbackQuery.Message.MessageId,
-            $"Вы выбрали: __*{day}/{month}/{year}*__\nВыберите час:",
+            $"Вы выбрали: __*{day}/{month}/{year}*__\n{listTimeTable}\nВыберите час:",
             replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: ParseMode.MarkdownV2);
     }
@@ -373,8 +383,9 @@ public static class TimeTableCommands
         });
 
         await dbContext.SaveChangesAsync();
-
-        // сохранить в бд поменять везде на строки Match и вызвать MenuDay
         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false);
+
+        callbackQuery.Data = $"TG_{day}_{month}_{year}";
+        await MenuDayTimeTable(dbContext, callbackQuery, botClient);
     }
 }

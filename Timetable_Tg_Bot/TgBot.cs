@@ -113,7 +113,7 @@ public class TgBot
                     // Menu Day
                     if (callbackQuery?.Data[1] == 'G')
                     {
-                        await TimeTableCommands.MenuDayTimeTable(callbackQuery, botClient);
+                        await TimeTableCommands.MenuDayTimeTable(DbContext, callbackQuery, botClient);
                         return;
                     }
 
