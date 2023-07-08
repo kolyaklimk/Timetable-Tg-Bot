@@ -9,12 +9,11 @@ public static class GeneralCommands
     {
         if (previous)
         {
-            int messageId = message.MessageId;
             while (true)
             {
                 try
                 {
-                    await botClient.DeleteMessageAsync(message.Chat.Id, messageId--);
+                    await botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId--);
                 }
                 catch
                 {
