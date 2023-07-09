@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -94,71 +95,60 @@ public class TgBot
                     return;
                 }
 
+
                 if (callbackQuery?.Data[0] == 'T')
                 {
-                    // Menu TimeTable
-                    if (callbackQuery?.Data[1] == 'H')
+                    switch (callbackQuery?.Data[1])
                     {
-                        await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
-                        return;
+                        // Menu TimeTable
+                        case 'H':
+                            await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
+                            return;
+
+                        // Choose Date
+                        case 'A':
+                            await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);
+                            return;
+
+                        // Menu Day
+                        case 'G':
+                            await TimeTableCommands.MenuDayTimeTable(DbContext, callbackQuery, botClient);
+                            return;
+
+                        // Choose hour
+                        case 'B':
+                            await TimeTableCommands.ChooseHourTimeTable(callbackQuery, botClient);
+                            return;
+
+                        // Choose minute
+                        case 'C':
+                            await TimeTableCommands.ChooseMinuteTimeTable(callbackQuery, botClient);
+                            return;
+
+                        // Choose is busy
+                        case 'D':
+                            await TimeTableCommands.ChooseIsBusyTimeTable(callbackQuery, botClient);
+                            return;
+
+                        // Add description
+                        case 'E':
+                            await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
+
+                            userState.WaitingForText = true;
+                            userState.Buffer1 = callbackQuery.Data;
+                            userState.Buffer2 = callbackQuery.Message.MessageId;
+                            await DbContext.SaveChangesAsync();
+                            return;
+
+                        // Save TimeTable
+                        case 'F':
+                            await TimeTableCommands.SaveTimeTable(DbContext, callbackQuery, botClient);
+
+                            userState.WaitingForText = false;
+                            await DbContext.SaveChangesAsync();
+                            return;
                     }
 
-                    // Choose Date
-                    if (callbackQuery?.Data[1] == 'A')
-                    {
-                        await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);
-                        return;
-                    }
-
-                    // Menu Day
-                    if (callbackQuery?.Data[1] == 'G')
-                    {
-                        await TimeTableCommands.MenuDayTimeTable(DbContext, callbackQuery, botClient);
-                        return;
-                    }
-
-                    // Choose hour
-                    if (callbackQuery?.Data[1] == 'B')
-                    {
-                        await TimeTableCommands.ChooseHourTimeTable(callbackQuery, botClient);
-                        return;
-                    }
-
-                    // Choose minute
-                    if (callbackQuery?.Data[1] == 'C')
-                    {
-                        await TimeTableCommands.ChooseMinuteTimeTable(callbackQuery, botClient);
-                        return;
-                    }
-
-                    // Choose is busy
-                    if (callbackQuery?.Data[1] == 'D')
-                    {
-                        await TimeTableCommands.ChooseIsBusyTimeTable(callbackQuery, botClient);
-                        return;
-                    }
-
-                    // Add description
-                    if (callbackQuery?.Data[1] == 'E')
-                    {
-                        await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
-
-                        userState.WaitingForText = true;
-                        userState.Buffer1 = callbackQuery.Data;
-                        userState.Buffer2 = callbackQuery.Message.MessageId;
-                        await DbContext.SaveChangesAsync();
-                        return;
-                    }
-
-                    // Save TimeTable
-                    if (callbackQuery?.Data[1] == 'F')
-                    {
-                        await TimeTableCommands.SaveTimeTable(DbContext, callbackQuery, botClient);
-
-                        userState.WaitingForText = false;
-                        await DbContext.SaveChangesAsync();
-                        return;
-                    }
                 }
 
                 #region ImageMenu
