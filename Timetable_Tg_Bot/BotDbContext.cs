@@ -11,10 +11,6 @@ public class BotDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        string projectPath = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
-
-        string dbFilePath = Path.Combine(projectPath, "Db\\bot.db");
-
-        optionsBuilder.UseSqlite($"Data Source={dbFilePath}");
+        optionsBuilder.UseSqlite($"Data Source=bot.db");
     }
 }
