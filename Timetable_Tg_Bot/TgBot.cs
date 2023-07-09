@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -58,6 +57,7 @@ public class TgBot
                         });
 
                         await DbContext.UserState.AddAsync(new UserState { UserId = message.From.Id, });
+                        await DbContext.UserBuffer.AddAsync(new UserBuffer { UserId = message.From.Id, });
                         await DbContext.SaveChangesAsync();
                     }
                     else
@@ -73,8 +73,12 @@ public class TgBot
 
                 if (userState.WaitingForText)
                 {
+                    var userBuffer = await DbContext.UserBuffer.FirstOrDefaultAsync(arg => arg.User.Id == message.From.Id);
+                    userBuffer.Buffer3 = message.Text;
+                    await DbContext.SaveChangesAsync();
+
                     await GeneralCommands.DeleteMessage(botClient, message);
-                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, userState.Buffer1, botClient, message.Chat, (int)userState.Buffer2);
+                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
                     return;
                 }
             }
@@ -134,9 +138,10 @@ public class TgBot
                         case 'E':
                             await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
 
+                            var userBuffer = await DbContext.UserBuffer.FirstOrDefaultAsync(arg => arg.User.Id == callbackQuery.From.Id);
                             userState.WaitingForText = true;
-                            userState.Buffer1 = callbackQuery.Data;
-                            userState.Buffer2 = callbackQuery.Message.MessageId;
+                            userBuffer.Buffer1 = callbackQuery.Data;
+                            userBuffer.Buffer2 = callbackQuery.Message.MessageId;
                             await DbContext.SaveChangesAsync();
                             return;
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -46,7 +47,6 @@ public static class TimeTableCommands
         if (SavedCalendars.TryGetValue($"{month}_{year}", out markup)) { }
         else
         {
-            Console.WriteLine("create");
             DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", Constants.dateFormat, null);
             int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
             int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
@@ -328,7 +328,7 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2);
     }
 
-    public static async Task AddDescriptionTimeTable(string? descrption, string data, ITelegramBotClient botClient, Chat chat, int messageId)
+    public static async Task AddDescriptionTimeTable(string? description, string data, ITelegramBotClient botClient, Chat chat, int messageId)
     {
         Match match = Regex.Match(data, Constants.AddDescriptionTimeTable);
 
@@ -344,7 +344,7 @@ public static class TimeTableCommands
             new InlineKeyboardButton[]
             {
                 InlineKeyboardButton.WithCallbackData(
-                    descrption != null ? $"Сохранить" : "Сохранить без изменений",$"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}_{descrption}"),
+                    description != null ? $"Сохранить" : "Сохранить без изменений",$"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
             },
             Constants.EmptyInlineKeyboardButton,
             new InlineKeyboardButton[]
@@ -361,7 +361,7 @@ public static class TimeTableCommands
             $"Напишите, если хотите изменить описание к этой записи :\\)" +
             $"Дата: {day}/{month}/{year}\n" +
             $"Время: {hour}:{minute}\n" +
-            $"Запись: {"1" == isBusy}" + (descrption != null ? $"\nОписание: {descrption}" : ""),
+            $"Запись: {"1" == isBusy}" + (description != null ? $"\nОписание: {description}" : ""),
             replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: ParseMode.MarkdownV2);
     }
@@ -376,7 +376,8 @@ public static class TimeTableCommands
         string day = match.Groups[4].Value;
         string month = match.Groups[5].Value;
         string year = match.Groups[6].Value;
-        string description = match.Groups[7].Value;
+
+        var userBuffer = await dbContext.UserBuffer.FirstOrDefaultAsync(arg => arg.User.Id == callbackQuery.From.Id);
 
         await dbContext.WorkTimes.AddAsync(new Entities.WorkTime
         {
@@ -384,7 +385,7 @@ public static class TimeTableCommands
             Start = TimeOnly.ParseExact($"{hour}:{minute}", Constants.timeFormat, null),
             IsBusy = "1" == isBusy,
             UserId = callbackQuery.From.Id,
-            Description = description
+            Description = userBuffer.Buffer3
         });
 
         await dbContext.SaveChangesAsync();
