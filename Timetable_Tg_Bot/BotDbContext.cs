@@ -32,7 +32,7 @@ public class BotDbContext : DbContext
         return await UserBuffers.FirstOrDefaultAsync(arg => arg.UserId == user.Id);
     }
 
-    public async Task UpdateUserStateAsync(UserState userState, bool waitingForText)
+    public void UpdateUserStateAsync(UserState userState, bool waitingForText)
     {
         userState.WaitingForText = waitingForText;
     }
