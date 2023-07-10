@@ -16,7 +16,7 @@ public class PublicConstants
     public const string ChooseHourTimeTable = @"^TB_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string ChooseMinuteTimeTable = @"^TC_(.{2})_(.{2})_(.{2})_(.{4})$"; // hour_day_month_year
     public const string ChooseIsBusyTimeTable = @"^TD_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$"; // minute_hour_day_month_year
-    public const string AddDescriptionTimeTable = @"^TE_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// true\false_minute_hour_day_month_year
+    public const string AddDescriptionTimeTable = @"^TE(.)_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// deleteDescription_true\false_minute_hour_day_month_year
     public const string SaveTimeTable = @"^TF_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// true\false_minute_hour_day_month_year
     public const string MenuDayTimeTable = @"^TG_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string MenuTimeTable = "TH";

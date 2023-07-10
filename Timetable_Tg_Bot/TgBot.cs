@@ -83,7 +83,8 @@ public class TgBot
                     if (userState.WaitingForText)
                     {
                         context.UpdateUserStateAsync(userState, false);
-                        await context.SetNullUserBuffer3(callbackQuery.From);
+                        if (callbackQuery?.Data[1]!='F')
+                            await context.SetNullUserBuffer3(callbackQuery.From);
                         await context.SaveChangesAsync();
                     }
 
@@ -132,9 +133,11 @@ public class TgBot
                                 case 'E':
                                     var userBuffer = await context.GetUserBufferAsync(callbackQuery.From);
                                     context.UpdateUserStateAsync(userState, true);
-                                    await TimeTableCommands.AddDescriptionTimeTable(userBuffer.Buffer3, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
-
                                     await context.UpdateUserBuffer_1_2_Async(callbackQuery);
+                                    if (callbackQuery?.Data[2] == 'Y')
+                                        userBuffer.Buffer3 = null;
+
+                                    await TimeTableCommands.AddDescriptionTimeTable(userBuffer.Buffer3, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
                                     await context.SaveChangesAsync();
                                     return;
 

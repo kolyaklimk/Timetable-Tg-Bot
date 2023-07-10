@@ -308,8 +308,8 @@ public static class TimeTableCommands
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Свободно",$"TE_0_{minute}_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Запись", $"TE_1_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Свободно",$"TEN_0_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Запись", $"TEN_1_{minute}_{hour}_{day}_{month}_{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[]
@@ -334,19 +334,24 @@ public static class TimeTableCommands
     {
         Match match = Regex.Match(data, PublicConstants.AddDescriptionTimeTable);
 
-        string isBusy = match.Groups[1].Value;
-        string minute = match.Groups[2].Value;
-        string hour = match.Groups[3].Value;
-        string day = match.Groups[4].Value;
-        string month = match.Groups[5].Value;
-        string year = match.Groups[6].Value;
+        string isBusy = match.Groups[2].Value;
+        string minute = match.Groups[3].Value;
+        string hour = match.Groups[4].Value;
+        string day = match.Groups[5].Value;
+        string month = match.Groups[6].Value;
+        string year = match.Groups[7].Value;
 
         var rows = new InlineKeyboardButton[][]
         {
-            new InlineKeyboardButton[]
+            description == null
+            ? new InlineKeyboardButton[]
             {
-                InlineKeyboardButton.WithCallbackData(
-                    description != null ? $"Сохранить" : "Сохранить без изменений",$"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Сохранить описания", $"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
+            }
+            :new InlineKeyboardButton[]
+            {
+                InlineKeyboardButton.WithCallbackData("Удалить описание", $"TEY_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Сохранить", $"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new InlineKeyboardButton[]
@@ -389,6 +394,7 @@ public static class TimeTableCommands
             UserId = callbackQuery.From.Id,
             Description = userBuffer.Buffer3
         });
+
         userBuffer.Buffer3 = null;
         await context.SaveChangesAsync();
 
