@@ -20,6 +20,7 @@ public class PublicConstants
     public const string SaveTimeTable = @"^TF_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// true\false_minute_hour_day_month_year
     public const string MenuDayTimeTable = @"^TG_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string MenuTimeTable = "TH";
+    public const string DeleteDayTimeTable = @"^TI_(.{2})_(.{2})_(.{4})$"; // day_month_year
     #endregion
 
     #region Dates

@@ -118,9 +118,10 @@ public static class TimeTableCommands
 
         DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
 
-        var dayTimetable = context.WorkTimes
+        var dayTimetable = await context.WorkTimes
             .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
-            .OrderBy(arg => arg.Start);
+            .OrderBy(arg => arg.Start)
+            .ToListAsync();
 
         var stringBuilder = new StringBuilder();
         foreach (var item in dayTimetable)
@@ -138,7 +139,7 @@ public static class TimeTableCommands
                 InlineKeyboardButton.WithCallbackData("Выбрать время", $"TB_{day}_{month}_{year}"),
             },
             new[]{
-                InlineKeyboardButton.WithCallbackData("Удалить всё","\0"),
+                InlineKeyboardButton.WithCallbackData("Удалить всё", $"TI_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Выбрать шаблон", "\0"),
             },
             new[]{
@@ -396,4 +397,25 @@ public static class TimeTableCommands
         callbackQuery.Data = $"TG_{day}_{month}_{year}";
         await MenuDayTimeTable(context, callbackQuery, botClient);
     }
+
+    public static async Task DeleteDayTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.DeleteDayTimeTable);
+
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+
+        var dayTimetable = context.WorkTimes.Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate);
+        context.WorkTimes.RemoveRange(dayTimetable);
+        await context.SaveChangesAsync();
+
+        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Записи на {day}/{month}/{year} удалены!", false);
+
+        callbackQuery.Data = $"TG_{day}_{month}_{year}";
+        await MenuDayTimeTable(context, callbackQuery, botClient);
+    }
+
 }

@@ -52,7 +52,7 @@ public class TgBot
                         }
                         else
                         {
-                            await context.UpdateUserStateAsync(userState, false);
+                            context.UpdateUserStateAsync(userState, false);
                         }
 
                         await GeneralCommands.DeleteMessage(botClient, message, true);
@@ -80,7 +80,7 @@ public class TgBot
                     // Check WaitingForText
                     if (userState.WaitingForText)
                     {
-                        await context.UpdateUserStateAsync(userState, false);
+                        context.UpdateUserStateAsync(userState, false);
                     }
 
                     switch (callbackQuery?.Data[0])
@@ -128,15 +128,20 @@ public class TgBot
                                 case 'E':
                                     await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
 
-                                    await context.UpdateUserStateAsync(userState, true);
+                                    context.UpdateUserStateAsync(userState, true);
                                     await context.UpdateUserBuffer_1_2_Async(callbackQuery);
                                     await context.SaveChangesAsync();
                                     return;
 
                                 // Save TimeTable
                                 case 'F':
-                                    await context.UpdateUserStateAsync(userState, false);
+                                    context.UpdateUserStateAsync(userState, false);
                                     await TimeTableCommands.SaveTimeTable(context, callbackQuery, botClient);
+                                    return;
+
+                                // Save TimeTable
+                                case 'I':
+                                    await TimeTableCommands.DeleteDayTimeTable(context, callbackQuery, botClient);
                                     return;
                             }
                             return;
