@@ -360,7 +360,7 @@ public static class TimeTableCommands
         await botClient.EditMessageTextAsync(
             chat.Id,
             messageId,
-            $"Напишите, если хотите изменить описание к этой записи :\\)" +
+            $"Напишите, если хотите изменить описание к этой записи :\\)\n" +
             $"Дата: {day}/{month}/{year}\n" +
             $"Время: {hour}:{minute}\n" +
             $"Запись: {"1" == isBusy}" + (description != null ? $"\nОписание: {description}" : ""),

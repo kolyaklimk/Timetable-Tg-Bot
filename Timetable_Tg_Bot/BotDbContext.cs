@@ -44,6 +44,12 @@ public class BotDbContext : DbContext
         userBuffer.Buffer2 = callbackQuery.Message.MessageId;
     }
 
+    public async Task SetNullUserBuffer3(UserTg user)
+    {
+        var userBuffer = await GetUserBufferAsync(user);
+        userBuffer.Buffer3 = null;
+    }
+
     public async Task RegisterUserAsync(Message message)
     {
         await Users.AddAsync(new User
