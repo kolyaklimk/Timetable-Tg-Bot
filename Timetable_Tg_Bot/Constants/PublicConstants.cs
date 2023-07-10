@@ -1,8 +1,8 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
 
-namespace TimetableTgBot;
+namespace TimetableTgBot.Constants;
 
-public class Constants
+public class PublicConstants
 {
     #region Menu
     public const string ImageMenu = "Изображение";
