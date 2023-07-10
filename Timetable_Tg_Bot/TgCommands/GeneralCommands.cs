@@ -1,5 +1,6 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
+using TimetableTgBot.Constants;
 
 namespace TimetableTgBot.TgCommands;
 
@@ -35,14 +36,14 @@ public static class GeneralCommands
                 message.Chat.Id,
                 message.MessageId,
                 "Меню:",
-                replyMarkup: Constants.MenuMarkup);
+                replyMarkup: PublicConstants.MenuMarkup);
         }
         else
         {
             await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Меню:",
-                replyMarkup: Constants.MenuMarkup);
+                replyMarkup: PublicConstants.MenuMarkup);
         }
     }
 }

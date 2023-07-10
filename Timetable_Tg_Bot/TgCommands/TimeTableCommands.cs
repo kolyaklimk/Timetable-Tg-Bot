@@ -7,6 +7,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using TimetableTgBot.Constants;
 
 namespace TimetableTgBot.TgCommands;
 
@@ -22,8 +23,8 @@ public static class TimeTableCommands
                 InlineKeyboardButton.WithCallbackData("Просмотр", "\0"),
                 InlineKeyboardButton.WithCallbackData("Добавить", $"TA_{message.Date.Month.ToString("00")}_{message.Date.Year}")
             },
-            Constants.EmptyInlineKeyboardButton,
-            new [] { InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu), },
+            PublicConstants.EmptyInlineKeyboardButton,
+            new [] { InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu), },
         });
 
         // Send message
@@ -37,7 +38,7 @@ public static class TimeTableCommands
 
     public static async Task ChooseDateTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        Match match = Regex.Match(callbackQuery.Data, Constants.ChooseMonthTimeTable);
+        Match match = Regex.Match(callbackQuery.Data, PublicConstants.ChooseMonthTimeTable);
 
         string month = match.Groups[1].Value;
         string year = match.Groups[2].Value;
@@ -47,7 +48,7 @@ public static class TimeTableCommands
         if (SavedCalendars.TryGetValue($"{month}_{year}", out markup)) { }
         else
         {
-            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", Constants.dateFormat, null);
+            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.dateFormat, null);
             int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
             int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
             var monthName = currentDate.ToString("MMMM", new CultureInfo("ru-RU"));
@@ -57,7 +58,7 @@ public static class TimeTableCommands
             {
                 new[] {
                     InlineKeyboardButton.WithCallbackData($"{char.ToUpper(monthName[0])}{monthName.Substring(1)} {currentDate.Year}", "\0")},
-                Constants.WeekButtons
+                PublicConstants.WeekButtons
             };
 
             // Calendar
@@ -87,12 +88,12 @@ public static class TimeTableCommands
 
             rows.Add(new[] {
                 currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TA_{previousMonth.Month.ToString("00")}_{previousMonth.Year}") : "\0",
-                Constants.Empty,
+                PublicConstants.Empty,
                 currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA_{nextMonth.Month.ToString("00")}_{nextMonth.Year}") : "\0",
             });
             rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", Constants.MenuTimeTable),
-                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+                InlineKeyboardButton.WithCallbackData("Назад", PublicConstants.MenuTimeTable),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             });
 
             markup = new InlineKeyboardMarkup(rows);
@@ -107,17 +108,17 @@ public static class TimeTableCommands
             replyMarkup: markup);
     }
 
-    public static async Task MenuDayTimeTable(BotDbContext dbContext, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task MenuDayTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        Match match = Regex.Match(callbackQuery.Data, Constants.MenuDayTimeTable);
+        Match match = Regex.Match(callbackQuery.Data, PublicConstants.MenuDayTimeTable);
 
         string day = match.Groups[1].Value;
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", Constants.dateFormat, null);
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
 
-        var dayTimetable = dbContext.WorkTimes
+        var dayTimetable = context.WorkTimes
             .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
             .OrderBy(arg => arg.Start);
 
@@ -142,12 +143,12 @@ public static class TimeTableCommands
             },
             new[]{
                 currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TG_{previousMonth.Day.ToString("00")}_{previousMonth.Month.ToString("00")}_{previousMonth.Year}") : "\0",
-                Constants.Empty,
+                PublicConstants.Empty,
                 currentDate.Year <=  callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TG_{nextMonth.Day.ToString("00")}_{nextMonth.Month.ToString("00")}_{nextMonth.Year}") : "\0",
             },
             new[]{
                 InlineKeyboardButton.WithCallbackData("Назад", $"TA_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
 
@@ -162,7 +163,7 @@ public static class TimeTableCommands
 
     public static async Task ChooseHourTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseHourTimeTable);
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseHourTimeTable);
 
         string day = match.Groups[1].Value;
         string month = match.Groups[2].Value;
@@ -194,7 +195,7 @@ public static class TimeTableCommands
             },
             new[] {
                 InlineKeyboardButton.WithCallbackData("18", $"TC_18_{day}_{month}_{year}"),
-                "\0","\0",Constants.Empty,"\0","\0",
+                "\0","\0",PublicConstants.Empty,"\0","\0",
                 InlineKeyboardButton.WithCallbackData("06", $"TC_06_{day}_{month}_{year}"),
             },
             new[] {
@@ -221,7 +222,7 @@ public static class TimeTableCommands
             new[] { InlineKeyboardButton.WithCallbackData("\0") },
             new[] {
                 InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
 
@@ -236,7 +237,7 @@ public static class TimeTableCommands
 
     public static async Task ChooseMinuteTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseMinuteTimeTable);
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseMinuteTimeTable);
 
         string hour = match.Groups[1].Value;
         string day = match.Groups[2].Value;
@@ -260,7 +261,7 @@ public static class TimeTableCommands
             },
             new[] {
                 InlineKeyboardButton.WithCallbackData("45",$"TD_45_{hour}_{day}_{month}_{year}"),
-                "\0",Constants.Empty,"\0",
+                "\0",PublicConstants.Empty,"\0",
                 InlineKeyboardButton.WithCallbackData("15",$"TD_15_{hour}_{day}_{month}_{year}"),
             },
             new[] {
@@ -277,7 +278,7 @@ public static class TimeTableCommands
             },
             new[] {
                 InlineKeyboardButton.WithCallbackData("Назад",$"TB_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
 
@@ -294,7 +295,7 @@ public static class TimeTableCommands
 
     public static async Task ChooseIsBusyTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        Match match = Regex.Match(callbackQuery?.Data, Constants.ChooseIsBusyTimeTable);
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseIsBusyTimeTable);
 
         string minute = match.Groups[1].Value;
         string hour = match.Groups[2].Value;
@@ -309,11 +310,11 @@ public static class TimeTableCommands
                 InlineKeyboardButton.WithCallbackData("Свободно",$"TE_0_{minute}_{hour}_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Запись", $"TE_1_{minute}_{hour}_{day}_{month}_{year}"),
             },
-            Constants.EmptyInlineKeyboardButton,
+            PublicConstants.EmptyInlineKeyboardButton,
             new[]
             {
                 InlineKeyboardButton.WithCallbackData("Назад", $"TC_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
 
@@ -330,7 +331,7 @@ public static class TimeTableCommands
 
     public static async Task AddDescriptionTimeTable(string? description, string data, ITelegramBotClient botClient, Chat chat, int messageId)
     {
-        Match match = Regex.Match(data, Constants.AddDescriptionTimeTable);
+        Match match = Regex.Match(data, PublicConstants.AddDescriptionTimeTable);
 
         string isBusy = match.Groups[1].Value;
         string minute = match.Groups[2].Value;
@@ -346,11 +347,11 @@ public static class TimeTableCommands
                 InlineKeyboardButton.WithCallbackData(
                     description != null ? $"Сохранить" : "Сохранить без изменений",$"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
             },
-            Constants.EmptyInlineKeyboardButton,
+            PublicConstants.EmptyInlineKeyboardButton,
             new InlineKeyboardButton[]
             {
                 InlineKeyboardButton.WithCallbackData("Назад", $"TD_{minute}_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", Constants.GoMenu),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
 
@@ -366,9 +367,9 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2);
     }
 
-    public static async Task SaveTimeTable(BotDbContext dbContext, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task SaveTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        Match match = Regex.Match(callbackQuery?.Data, Constants.SaveTimeTable);
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.SaveTimeTable);
 
         string isBusy = match.Groups[1].Value;
         string minute = match.Groups[2].Value;
@@ -377,21 +378,22 @@ public static class TimeTableCommands
         string month = match.Groups[5].Value;
         string year = match.Groups[6].Value;
 
-        var userBuffer = await dbContext.UserBuffer.FirstOrDefaultAsync(arg => arg.User.Id == callbackQuery.From.Id);
+        var userBuffer = await context.GetUserBufferAsync(callbackQuery.From);
 
-        await dbContext.WorkTimes.AddAsync(new Entities.WorkTime
+        await context.WorkTimes.AddAsync(new Entities.WorkTime
         {
-            Date = DateOnly.ParseExact($"{day}/{month}/{year}", Constants.dateFormat, null),
-            Start = TimeOnly.ParseExact($"{hour}:{minute}", Constants.timeFormat, null),
+            Date = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null),
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
             IsBusy = "1" == isBusy,
             UserId = callbackQuery.From.Id,
             Description = userBuffer.Buffer3
         });
+        userBuffer.Buffer3 = null;
+        await context.SaveChangesAsync();
 
-        await dbContext.SaveChangesAsync();
         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false);
 
         callbackQuery.Data = $"TG_{day}_{month}_{year}";
-        await MenuDayTimeTable(dbContext, callbackQuery, botClient);
+        await MenuDayTimeTable(context, callbackQuery, botClient);
     }
 }

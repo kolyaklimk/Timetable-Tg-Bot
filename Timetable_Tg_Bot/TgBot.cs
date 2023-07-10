@@ -1,17 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Security.AccessControl;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using TimetableTgBot.Entities;
+using TimetableTgBot.Constants;
 using TimetableTgBot.TgCommands;
 
 namespace TimetableTgBot;
 
 public class TgBot
 {
-    private readonly BotDbContext DbContext = new BotDbContext();
     public TgBot()
     {
         var botClient = new TelegramBotClient(PrivateConstants.TOKEN_TG_BOT);
@@ -35,159 +34,122 @@ public class TgBot
         {
             var message = update.Message;
             var callbackQuery = update.CallbackQuery;
-            var userState = await DbContext.UserState.FirstOrDefaultAsync(
-                arg => arg.User.Id == (message != null ? message.From.Id : callbackQuery.From.Id));
 
-            if (update.Type == UpdateType.Message)
+            using (var context = new BotDbContext())
             {
-                // start
-                if (message.Text == "/start")
-                {
-                    var user = await DbContext.Users.FirstOrDefaultAsync(arg => arg.Id == message.From.Id);
+                var userState = await context.GetUserStateAsync(message != null ? message.From : callbackQuery.From);
 
-                    if (user == null)
+                if (update.Type == UpdateType.Message)
+                {
+                    // start
+                    if (message.Text == "/start")
                     {
-                        await DbContext.Users.AddAsync(new Entities.User
+                        var user = await context.GetUserAsync(message.From);
+
+                        if (user == null)
                         {
-                            Id = message.From.Id,
-                            FirstName = message.From.FirstName,
-                            LastName = message.From.LastName,
-                            UserName = message.From.Username,
-                            Subscription = message.Date.AddDays(3)
-                        });
+                            await context.RegisterUserAsync(message);
+                        }
+                        else
+                        {
+                            await context.UpdateUserStateAsync(userState, false);
+                        }
 
-                        await DbContext.UserState.AddAsync(new UserState { UserId = message.From.Id, });
-                        await DbContext.UserBuffer.AddAsync(new UserBuffer { UserId = message.From.Id, });
-                        await DbContext.SaveChangesAsync();
+                        await GeneralCommands.DeleteMessage(botClient, message, true);
+                        await GeneralCommands.CreateMenu(false, botClient, message);
+
+                        await context.SaveChangesAsync();
+                        return;
                     }
-                    else
+
+                    if (userState.WaitingForText)
                     {
-                        userState.WaitingForText = false;
-                        await DbContext.SaveChangesAsync();
+                        var userBuffer = await context.GetUserBufferAsync(message.From);
+                        userBuffer.Buffer3 = message.Text;
+
+                        await GeneralCommands.DeleteMessage(botClient, message);
+                        await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
+
+                        await context.SaveChangesAsync();
+                        return;
                     }
-
-                    await GeneralCommands.DeleteMessage(botClient, message, true);
-                    await GeneralCommands.CreateMenu(false, botClient, message);
-                    return;
                 }
 
-                if (userState.WaitingForText)
+                if (update.Type == UpdateType.CallbackQuery)
                 {
-                    var userBuffer = await DbContext.UserBuffer.FirstOrDefaultAsync(arg => arg.User.Id == message.From.Id);
-                    userBuffer.Buffer3 = message.Text;
-                    await DbContext.SaveChangesAsync();
-
-                    await GeneralCommands.DeleteMessage(botClient, message);
-                    await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
-                    return;
-                }
-            }
-
-            if (update.Type == UpdateType.CallbackQuery)
-            {
-                // Check WaitingForText
-                if (userState.WaitingForText)
-                {
-                    userState.WaitingForText = false;
-                    await DbContext.SaveChangesAsync();
-                }
-
-                // Go main Menu
-                if (callbackQuery?.Data == Constants.GoMenu)
-                {
-                    await GeneralCommands.CreateMenu(true, botClient, callbackQuery.Message);
-                    return;
-                }
-
-
-                if (callbackQuery?.Data[0] == 'T')
-                {
-                    switch (callbackQuery?.Data[1])
+                    // Check WaitingForText
+                    if (userState.WaitingForText)
                     {
-                        // Menu TimeTable
-                        case 'H':
-                            await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
-                            return;
-
-                        // Choose Date
-                        case 'A':
-                            await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);
-                            return;
-
-                        // Menu Day
-                        case 'G':
-                            await TimeTableCommands.MenuDayTimeTable(DbContext, callbackQuery, botClient);
-                            return;
-
-                        // Choose hour
-                        case 'B':
-                            await TimeTableCommands.ChooseHourTimeTable(callbackQuery, botClient);
-                            return;
-
-                        // Choose minute
-                        case 'C':
-                            await TimeTableCommands.ChooseMinuteTimeTable(callbackQuery, botClient);
-                            return;
-
-                        // Choose is busy
-                        case 'D':
-                            await TimeTableCommands.ChooseIsBusyTimeTable(callbackQuery, botClient);
-                            return;
-
-                        // Add description
-                        case 'E':
-                            await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
-
-                            var userBuffer = await DbContext.UserBuffer.FirstOrDefaultAsync(arg => arg.User.Id == callbackQuery.From.Id);
-                            userState.WaitingForText = true;
-                            userBuffer.Buffer1 = callbackQuery.Data;
-                            userBuffer.Buffer2 = callbackQuery.Message.MessageId;
-                            await DbContext.SaveChangesAsync();
-                            return;
-
-                        // Save TimeTable
-                        case 'F':
-                            await TimeTableCommands.SaveTimeTable(DbContext, callbackQuery, botClient);
-
-                            userState.WaitingForText = false;
-                            await DbContext.SaveChangesAsync();
-                            return;
+                        await context.UpdateUserStateAsync(userState, false);
                     }
 
+                    switch (callbackQuery?.Data[0])
+                    {
+                        // Go main Menu
+                        case 'M':
+                            await GeneralCommands.CreateMenu(true, botClient, callbackQuery.Message);
+                            return;
+
+                        // Timetable
+                        case 'T':
+                            switch (callbackQuery?.Data[1])
+                            {
+                                // Menu TimeTable
+                                case 'H':
+                                    await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
+                                    return;
+
+                                // Choose Date
+                                case 'A':
+                                    await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);
+                                    return;
+
+                                // Menu Day
+                                case 'G':
+                                    await TimeTableCommands.MenuDayTimeTable(context, callbackQuery, botClient);
+                                    return;
+
+                                // Choose hour
+                                case 'B':
+                                    await TimeTableCommands.ChooseHourTimeTable(callbackQuery, botClient);
+                                    return;
+
+                                // Choose minute
+                                case 'C':
+                                    await TimeTableCommands.ChooseMinuteTimeTable(callbackQuery, botClient);
+                                    return;
+
+                                // Choose is busy
+                                case 'D':
+                                    await TimeTableCommands.ChooseIsBusyTimeTable(callbackQuery, botClient);
+                                    return;
+
+                                // Add description
+                                case 'E':
+                                    await TimeTableCommands.AddDescriptionTimeTable(null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
+
+                                    await context.UpdateUserStateAsync(userState, true);
+                                    await context.UpdateUserBuffer_1_2_Async(callbackQuery);
+                                    await context.SaveChangesAsync();
+                                    return;
+
+                                // Save TimeTable
+                                case 'F':
+                                    await context.UpdateUserStateAsync(userState, false);
+                                    await TimeTableCommands.SaveTimeTable(context, callbackQuery, botClient);
+                                    return;
+                            }
+                            return;
+
+                        // Answer other null callback
+                        default:
+                            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                            return;
+                    }
                 }
 
-                #region ImageMenu
-                if (callbackQuery?.Data == Constants.ImageMenu)
-                {
-
-                    //await GeneralCommands.DeleteMessage(botClient, message);
-                    return;
-                }
-                #endregion
-
-                #region SupportMenu
-                if (callbackQuery?.Data == Constants.SupportMenu)
-                {
-
-                    //await GeneralCommands.DeleteMessage(botClient, message);
-                    return;
-                }
-                #endregion
-
-                #region SubscribeMenu
-                if (callbackQuery?.Data == Constants.SubscribeMenu)
-                {
-
-                    //await GeneralCommands.DeleteMessage(botClient, message);
-                    return;
-                }
-                #endregion
-
-                await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                return;
+                await GeneralCommands.DeleteMessage(botClient, message);
             }
-
-            await GeneralCommands.DeleteMessage(botClient, message);
         }
         catch (ApiRequestException apiRequestException)
         {

@@ -8,7 +8,7 @@ public class PublicConstants
     public const string ImageMenu = "Изображение";
     public const string SupportMenu = "Поддержка";
     public const string SubscribeMenu = "Подписка";
-    public const string GoMenu = "GoMenu";
+    public const string GoMenu = "M";
     #endregion
 
     #region TimeTable
