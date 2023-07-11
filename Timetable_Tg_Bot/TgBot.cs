@@ -83,7 +83,7 @@ public class TgBot
                     if (userState.WaitingForText)
                     {
                         context.UpdateUserStateAsync(userState, false);
-                        if (callbackQuery?.Data[1]!='F')
+                        if (callbackQuery?.Data[1] != 'F')
                             await context.SetNullUserBuffer3(callbackQuery.From);
                         await context.SaveChangesAsync();
                     }
@@ -156,6 +156,10 @@ public class TgBot
                                     await TimeTableCommands.ChooseTimeTimeTable(context, callbackQuery, botClient);
                                     return;
 
+                                // Edit time
+                                case 'K':
+                                    await TimeTableCommands.EditTimeTimeTable(context, callbackQuery, botClient);
+                                    return;
                             }
                             return;
 

@@ -344,17 +344,17 @@ public static class TimeTableCommands
         var rows = new InlineKeyboardButton[][]
         {
             description == null
-            ? new InlineKeyboardButton[]
+            ? new[]
             {
                 InlineKeyboardButton.WithCallbackData("Сохранить описания", $"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
             }
-            :new InlineKeyboardButton[]
+            : new[]
             {
                 InlineKeyboardButton.WithCallbackData("Удалить описание", $"TEY_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Сохранить", $"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
-            new InlineKeyboardButton[]
+            new[]
             {
                 InlineKeyboardButton.WithCallbackData("Назад", $"TD_{minute}_{hour}_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
@@ -447,8 +447,8 @@ public static class TimeTableCommands
             for (var j = 0; j < row.Count(); j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
-                    $"{times[i].Start.Hour}:{times[i].Start.Minute}",
-                    $"TK_{times[i].Start.Minute.ToString("00")}_{times[i].Start.Hour.ToString("00")}_{day}_{month}_{year}");
+                    $"{times[i].Start.Hour}:{times[i].Start.Minute.ToString("00")}",
+                    $"TK0_{times[i].Id}");
                 i++;
             }
             rows.Add(row);
@@ -466,5 +466,49 @@ public static class TimeTableCommands
             callbackQuery.Message.MessageId,
             "Выберите время:",
             replyMarkup: new InlineKeyboardMarkup(rows));
+    }
+
+    public static async Task EditTimeTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTimeTimeTable);
+
+        char index = match.Groups[1].Value[0];
+        string idWorkTime = match.Groups[2].Value;
+        var time = await context.WorkTimes.FirstOrDefaultAsync(arg => arg.Id == long.Parse(idWorkTime));
+
+        if (index == 'D')
+        {
+            context.WorkTimes.Remove(time);
+            await context.SaveChangesAsync();
+            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись удалена!", false);
+
+            callbackQuery.Data = $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}";
+            await ChooseTimeTimeTable(context, callbackQuery, botClient);
+        }
+        else
+        {
+            var rows = new InlineKeyboardButton[][]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Удалить",$"TKD_{idWorkTime}"),
+                    time.IsBusy
+                    ? InlineKeyboardButton.WithCallbackData("Свободно", $"TK1_{idWorkTime}")
+                    : InlineKeyboardButton.WithCallbackData("Занято", $"TK2_{idWorkTime}")
+                },
+                PublicConstants.EmptyInlineKeyboardButton,
+                new[] {
+                    InlineKeyboardButton.WithCallbackData("Назад", $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}"),
+                    InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+                }
+            };
+
+            // Send message
+            await botClient.EditMessageTextAsync(
+                callbackQuery.Message.Chat.Id,
+                callbackQuery.Message.MessageId,
+                "Выбери чёнить\\.\nНапиши что-нибудь, чтобы изменить описание (не работает):",
+                replyMarkup: new InlineKeyboardMarkup(rows));
+        }
     }
 }
