@@ -21,7 +21,7 @@ public static class TimeTableCommands
         {
             new [] {
                 InlineKeyboardButton.WithCallbackData("Просмотр", "\0"),
-                InlineKeyboardButton.WithCallbackData("Добавить", $"TA_{message.Date.Month.ToString("00")}_{message.Date.Year}")
+                InlineKeyboardButton.WithCallbackData("Редактирование", $"TA_{message.Date.Month.ToString("00")}_{message.Date.Year}")
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new [] { InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu), },
@@ -135,7 +135,7 @@ public static class TimeTableCommands
 
         var rows = new InlineKeyboardButton[][] {
             new[]{
-                InlineKeyboardButton.WithCallbackData("Удалить время","\0"),
+                InlineKeyboardButton.WithCallbackData("Изменить время",$"TJ_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Выбрать время", $"TB_{day}_{month}_{year}"),
             },
             new[]{
@@ -424,4 +424,47 @@ public static class TimeTableCommands
         await MenuDayTimeTable(context, callbackQuery, botClient);
     }
 
+    public static async Task ChooseTimeTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseTimeTimeTable);
+
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+
+        var times = await context.WorkTimes
+            .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
+            .ToListAsync();
+
+        // Times
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for (var i = 0; i < times.Count();)
+        {
+            var row = new InlineKeyboardButton[(times.Count() - i) >= 4 ? 4 : (times.Count() - i) % 4];
+            for (var j = 0; j < row.Count(); j++)
+            {
+                row[j] = InlineKeyboardButton.WithCallbackData(
+                    $"{times[i].Start.Hour}:{times[i].Start.Minute}",
+                    $"TK_{times[i].Start.Minute.ToString("00")}_{times[i].Start.Hour.ToString("00")}_{day}_{month}_{year}");
+                i++;
+            }
+            rows.Add(row);
+        }
+
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+        });
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "Выберите время:",
+            replyMarkup: new InlineKeyboardMarkup(rows));
+    }
 }

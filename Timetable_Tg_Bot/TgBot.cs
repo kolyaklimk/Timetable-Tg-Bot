@@ -99,7 +99,7 @@ public class TgBot
                         case 'T':
                             switch (callbackQuery?.Data[1])
                             {
-                                // Menu TimeTable
+                                // Menu 
                                 case 'H':
                                     await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
                                     return;
@@ -141,15 +141,21 @@ public class TgBot
                                     await context.SaveChangesAsync();
                                     return;
 
-                                // Save TimeTable
+                                // Save
                                 case 'F':
                                     await TimeTableCommands.SaveTimeTable(context, callbackQuery, botClient);
                                     return;
 
-                                // Save TimeTable
+                                // Delete day
                                 case 'I':
                                     await TimeTableCommands.DeleteDayTimeTable(context, callbackQuery, botClient);
                                     return;
+
+                                // Choose time for edit
+                                case 'J':
+                                    await TimeTableCommands.ChooseTimeTimeTable(context, callbackQuery, botClient);
+                                    return;
+
                             }
                             return;
 
