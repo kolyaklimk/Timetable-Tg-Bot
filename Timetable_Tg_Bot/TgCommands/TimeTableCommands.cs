@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Net.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
@@ -476,19 +477,30 @@ public static class TimeTableCommands
         string idWorkTime = match.Groups[2].Value;
         var time = await context.WorkTimes.FirstOrDefaultAsync(arg => arg.Id == long.Parse(idWorkTime));
 
-        if (index == 'D')
+        switch(index)
         {
-            context.WorkTimes.Remove(time);
-            await context.SaveChangesAsync();
-            await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись удалена!", false);
+            case 'D':
+                context.WorkTimes.Remove(time);
+                await context.SaveChangesAsync();
+                await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись удалена!", false);
 
-            callbackQuery.Data = $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}";
-            await ChooseTimeTimeTable(context, callbackQuery, botClient);
-        }
-        else
-        {
-            var rows = new InlineKeyboardButton[][]
-            {
+                callbackQuery.Data = $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}";
+                await ChooseTimeTimeTable(context, callbackQuery, botClient);                
+                return;
+
+            case '1':
+                time.IsBusy = false;
+                await context.SaveChangesAsync();
+                goto default;
+
+            case '2':
+                time.IsBusy = true;
+                await context.SaveChangesAsync();
+                goto default;
+
+            default:
+                var rows = new InlineKeyboardButton[][]
+                {
                 new[]
                 {
                     InlineKeyboardButton.WithCallbackData("Удалить",$"TKD_{idWorkTime}"),
@@ -501,14 +513,15 @@ public static class TimeTableCommands
                     InlineKeyboardButton.WithCallbackData("Назад", $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}"),
                     InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
                 }
-            };
+                };
 
-            // Send message
-            await botClient.EditMessageTextAsync(
-                callbackQuery.Message.Chat.Id,
-                callbackQuery.Message.MessageId,
-                "Выбери чёнить\\.\nНапиши что-нибудь, чтобы изменить описание (не работает):",
-                replyMarkup: new InlineKeyboardMarkup(rows));
+                // Send message
+                await botClient.EditMessageTextAsync(
+                    callbackQuery.Message.Chat.Id,
+                    callbackQuery.Message.MessageId,
+                    "Выбери чёнить\\.\nНапиши что-нибудь, чтобы изменить описание (не работает):",
+                    replyMarkup: new InlineKeyboardMarkup(rows));
+                return;
         }
     }
 }
