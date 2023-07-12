@@ -8,9 +8,9 @@ public static class GeneralCommands
 {
     public static async Task DeleteMessage(ITelegramBotClient botClient, Message message, bool previous = false)
     {
-        if (previous)
+        if(previous)
         {
-            while (true)
+            while(true)
             {
                 try
                 {

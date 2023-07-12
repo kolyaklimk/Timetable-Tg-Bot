@@ -31,13 +31,13 @@ public class PublicConstants
     #endregion
 
     #region Other
-    public const string Empty = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
     public const string dateFormat = "dd/MM/yyyy";
     public const string timeFormat = "HH:mm";
 
-    public static readonly InlineKeyboardButton[] EmptyInlineKeyboardButton = { Empty, "\0" };
+    public static readonly InlineKeyboardButton[] EmptyInlineKeyboardButton = {
+        InlineKeyboardButton.WithCallbackData("...............................................................................", "\0")};
 
-    public static readonly InlineKeyboardMarkup MenuMarkup = new InlineKeyboardMarkup(new[]
+    public static readonly InlineKeyboardMarkup MenuMarkup = new(new[]
     {
         new InlineKeyboardButton[] {
             ImageMenu,
