@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Net.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
@@ -46,7 +45,8 @@ public static class TimeTableCommands
 
         InlineKeyboardMarkup markup;
 
-        if (SavedCalendars.TryGetValue($"{month}_{year}", out markup)) { }
+        if(SavedCalendars.TryGetValue($"{month}_{year}", out markup))
+        { }
         else
         {
             DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.dateFormat, null);
@@ -64,13 +64,13 @@ public static class TimeTableCommands
 
             // Calendar
             int currentDay = 1;
-            while (currentDay <= daysInMonth)
+            while(currentDay <= daysInMonth)
             {
                 var row = new InlineKeyboardButton[7];
 
-                for (int i = 0; i < 7; i++)
+                for(int i = 0; i < 7; i++)
                 {
-                    if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
+                    if(currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                     {
                         row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG_{currentDay.ToString("00")}_{month}_{year}");
                         currentDay++;
@@ -125,7 +125,7 @@ public static class TimeTableCommands
             .ToListAsync();
 
         var stringBuilder = new StringBuilder();
-        foreach (var item in dayTimetable)
+        foreach(var item in dayTimetable)
         {
             stringBuilder.AppendLine($"{item.Start.Hour.ToString("00")}:{item.Start.Minute.ToString("00")} \\- {item.IsBusy} \\- {item.Description}\n");
         }
@@ -442,10 +442,10 @@ public static class TimeTableCommands
         // Times
         var rows = new List<InlineKeyboardButton[]>();
 
-        for (var i = 0; i < times.Count();)
+        for(var i = 0; i < times.Count();)
         {
             var row = new InlineKeyboardButton[(times.Count() - i) >= 4 ? 4 : (times.Count() - i) % 4];
-            for (var j = 0; j < row.Count(); j++)
+            for(var j = 0; j < row.Count(); j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
                     $"{times[i].Start.Hour}:{times[i].Start.Minute.ToString("00")}",
@@ -469,9 +469,9 @@ public static class TimeTableCommands
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
-    public static async Task EditTimeTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task EditTimeTimeTable(string? newDescription, string data, BotDbContext context, ITelegramBotClient botClient, Chat chat, int messageId, CallbackQuery callbackQuery = null)
     {
-        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTimeTimeTable);
+        Match match = Regex.Match(data, PublicConstants.EditTimeTimeTable);
 
         char index = match.Groups[1].Value[0];
         string idWorkTime = match.Groups[2].Value;
@@ -485,20 +485,31 @@ public static class TimeTableCommands
                 await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись удалена!", false);
 
                 callbackQuery.Data = $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}";
-                await ChooseTimeTimeTable(context, callbackQuery, botClient);                
+                await ChooseTimeTimeTable(context, callbackQuery, botClient);
                 return;
+
+            case 'R':
+                if(time.Description == null)
+                {
+                    botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                    return;
+                }
+                time.Description = null;
+                goto default;
 
             case '1':
                 time.IsBusy = false;
-                await context.SaveChangesAsync();
                 goto default;
 
             case '2':
                 time.IsBusy = true;
-                await context.SaveChangesAsync();
                 goto default;
 
             default:
+                if(newDescription != null)
+                    time.Description = newDescription;
+                await context.SaveChangesAsync();
+
                 var rows = new InlineKeyboardButton[][]
                 {
                 new[]
@@ -508,6 +519,10 @@ public static class TimeTableCommands
                     ? InlineKeyboardButton.WithCallbackData("Свободно", $"TK1_{idWorkTime}")
                     : InlineKeyboardButton.WithCallbackData("Занято", $"TK2_{idWorkTime}")
                 },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Удалить описание", $"TKR_{idWorkTime}"),
+                },
                 PublicConstants.EmptyInlineKeyboardButton,
                 new[] {
                     InlineKeyboardButton.WithCallbackData("Назад", $"TJ_{time.Date.Day.ToString("00")}_{time.Date.Month.ToString("00")}_{time.Date.Year}"),
@@ -515,11 +530,17 @@ public static class TimeTableCommands
                 }
                 };
 
+
                 // Send message
                 await botClient.EditMessageTextAsync(
-                    callbackQuery.Message.Chat.Id,
-                    callbackQuery.Message.MessageId,
-                    "Выбери чёнить\\.\nНапиши что-нибудь, чтобы изменить описание (не работает):",
+                    chat.Id,
+                    messageId,
+                    $"Дата: {time.Date.Day}/{time.Date.Month}/{time.Date.Year}\n" +
+                    $"Время: {time.Start.Hour}:{time.Start.Minute}\n" +
+                    $"Занятость: {time.IsBusy}\n" +
+                    $"Описание: {time.Description}\n\n" +
+                    "Выбери чёнить.\nНапиши что-нибудь, чтобы изменить описание (не работает):",
+                    disableWebPagePreview: true,
                     replyMarkup: new InlineKeyboardMarkup(rows));
                 return;
         }

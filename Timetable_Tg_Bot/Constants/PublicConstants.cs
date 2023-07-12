@@ -8,7 +8,7 @@ public class PublicConstants
     public const string ImageMenu = "Изображение";
     public const string SupportMenu = "Поддержка";
     public const string SubscribeMenu = "Подписка";
-    public const string GoMenu = "M";
+    public const string GoMenu = "MM";
     #endregion
 
     #region TimeTable
@@ -31,7 +31,7 @@ public class PublicConstants
     #endregion
 
     #region Other
-    public const string Empty = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
+    public const string Empty = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
     public const string dateFormat = "dd/MM/yyyy";
     public const string timeFormat = "HH:mm";
 

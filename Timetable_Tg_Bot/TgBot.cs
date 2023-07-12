@@ -34,19 +34,19 @@ public class TgBot
             var message = update.Message;
             var callbackQuery = update.CallbackQuery;
 
-            using (var context = new BotDbContext())
+            using(var context = new BotDbContext())
             {
                 var userState = await context.GetUserStateAsync(message != null ? message.From : callbackQuery.From);
 
-                if (update.Type == UpdateType.Message)
+                if(update.Type == UpdateType.Message)
                 {
 
                     // start
-                    if (message.Text == "/start")
+                    if(message.Text == "/start")
                     {
                         var user = await context.GetUserAsync(message.From);
 
-                        if (user == null)
+                        if(user == null)
                         {
                             await context.RegisterUserAsync(message);
                         }
@@ -64,31 +64,40 @@ public class TgBot
                     }
 
                     // Check WaitingForText
-                    if (userState.WaitingForText)
+                    if(userState.WaitingForText)
                     {
                         var userBuffer = await context.GetUserBufferAsync(message.From);
-                        userBuffer.Buffer3 = message.Text;
-
                         await GeneralCommands.DeleteMessage(botClient, message);
-                        await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
+                        switch(userBuffer.Buffer1[1])
+                        {
+                            // Description in create
+                            case 'E':
+                                userBuffer.Buffer3 = message.Text;
+                                await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
+                                break;
 
+                            // Description in edit time
+                            case 'K':
+                                await TimeTableCommands.EditTimeTimeTable(message.Text, userBuffer.Buffer1, context, botClient, message.Chat, (int)userBuffer.Buffer2);
+                                break;
+                        }
                         await context.SaveChangesAsync();
                         return;
                     }
                 }
 
-                if (update.Type == UpdateType.CallbackQuery)
+                if(update.Type == UpdateType.CallbackQuery)
                 {
                     // Check WaitingForText
-                    if (userState.WaitingForText)
+                    if(userState.WaitingForText)
                     {
                         context.UpdateUserStateAsync(userState, false);
-                        if (callbackQuery?.Data[1] != 'F')
+                        if(callbackQuery?.Data[1] != 'F')
                             await context.SetNullUserBuffer3(callbackQuery.From);
                         await context.SaveChangesAsync();
                     }
 
-                    switch (callbackQuery?.Data[0])
+                    switch(callbackQuery?.Data[0])
                     {
                         // Go main Menu
                         case 'M':
@@ -97,7 +106,7 @@ public class TgBot
 
                         // Timetable
                         case 'T':
-                            switch (callbackQuery?.Data[1])
+                            switch(callbackQuery?.Data[1])
                             {
                                 // Menu 
                                 case 'H':
@@ -134,7 +143,7 @@ public class TgBot
                                     var userBuffer = await context.GetUserBufferAsync(callbackQuery.From);
                                     context.UpdateUserStateAsync(userState, true);
                                     await context.UpdateUserBuffer_1_2_Async(callbackQuery);
-                                    if (callbackQuery?.Data[2] == 'Y')
+                                    if(callbackQuery?.Data[2] == 'Y')
                                         userBuffer.Buffer3 = null;
 
                                     await TimeTableCommands.AddDescriptionTimeTable(userBuffer.Buffer3, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
@@ -158,7 +167,10 @@ public class TgBot
 
                                 // Edit time
                                 case 'K':
-                                    await TimeTableCommands.EditTimeTimeTable(context, callbackQuery, botClient);
+                                    context.UpdateUserStateAsync(userState, true);
+                                    await context.UpdateUserBuffer_1_2_Async(callbackQuery);
+
+                                    await TimeTableCommands.EditTimeTimeTable(null, callbackQuery?.Data, context, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId, callbackQuery);
                                     return;
                             }
                             return;
@@ -173,12 +185,12 @@ public class TgBot
                 await GeneralCommands.DeleteMessage(botClient, message);
             }
         }
-        catch (ApiRequestException apiRequestException)
+        catch(ApiRequestException apiRequestException)
         {
             Console.WriteLine($"{update.Message?.From?.FirstName} {update.Message?.From?.Username} {DateTime.Now}\n");
             Console.WriteLine($"Telegram API Error: [{apiRequestException.ErrorCode}] - {apiRequestException.Message}\n");
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Console.WriteLine($"{update.Message?.From?.FirstName} {update.Message?.From?.Username} {DateTime.Now}\n{ex}\n");
         }
