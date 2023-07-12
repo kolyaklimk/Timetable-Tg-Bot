@@ -126,7 +126,7 @@ public static class TimeTableCommands
         var stringBuilder = new StringBuilder();
         foreach(var item in dayTimetable)
         {
-            stringBuilder.AppendLine($"{item.Start.Hour:00)}:{item.Start.Minute:00)} \\- {item.IsBusy} \\- {item.Description}\n");
+            stringBuilder.AppendLine($"{item.Start.Hour:00}:{item.Start.Minute:00} \\- {item.IsBusy} \\- {item.Description}\n");
         }
 
         // previous and next buttons
@@ -153,13 +153,13 @@ public static class TimeTableCommands
             }
         };
 
+        Console.WriteLine($"Вы выбрали: __*{day}/{month}/{year}*__\n{stringBuilder}\nВыберите час:");
         // Send message
         await botClient.EditMessageTextAsync(
             callbackQuery.Message.Chat.Id,
             callbackQuery.Message.MessageId,
-            $"Вы выбрали: __*{day}/{month}/{year}*__\n{stringBuilder}\nВыберите час:",
-            replyMarkup: new InlineKeyboardMarkup(rows),
-            parseMode: ParseMode.MarkdownV2);
+            $"Вы выбрали: {day}/{month}/{year}\n{stringBuilder}\nВыберите час:",
+            replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
     public static async Task ChooseHourTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
