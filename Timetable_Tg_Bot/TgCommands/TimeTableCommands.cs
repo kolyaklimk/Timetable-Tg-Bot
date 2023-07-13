@@ -140,7 +140,7 @@ public static class TimeTableCommands
             },
             new[]{
                 InlineKeyboardButton.WithCallbackData("Удалить всё", $"TI_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Выбрать шаблон", "\0"),
+                InlineKeyboardButton.WithCallbackData("Выбрать шаблон", $"TL_{day}_{month}_{year}"),
             },
             new[]{
                 currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TG_{previousMonth.Day :00}_{previousMonth.Month:00}_{previousMonth.Year}") : "\0",
@@ -153,7 +153,6 @@ public static class TimeTableCommands
             }
         };
 
-        Console.WriteLine($"Вы выбрали: __*{day}/{month}/{year}*__\n{stringBuilder}\nВыберите час:");
         // Send message
         await botClient.EditMessageTextAsync(
             callbackQuery.Message.Chat.Id,
@@ -545,5 +544,67 @@ public static class TimeTableCommands
                     replyMarkup: new InlineKeyboardMarkup(rows));
                 return;
         }
+    }
+
+    public static async Task MenuTemplateTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.MenuTemplateTimeTable);
+
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+
+        // Times
+        var rows = new InlineKeyboardButton[][]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Создать", $"TM_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Выбрать", "\0"),
+            },
+            PublicConstants.EmptyInlineKeyboardButton,
+            new[] {
+                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+            }
+        };
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "При выборе шаблона, ваши записи на этот жень удалятся!",
+            replyMarkup: new InlineKeyboardMarkup(rows));
+    }
+
+    public static async Task CreateTemplateTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.CreateTemplateTimeTable);
+
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+
+        // Times
+        var rows = new InlineKeyboardButton[][]
+        {
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Создать",""),
+                InlineKeyboardButton.WithCallbackData("Выбрать", ""),
+            },
+            PublicConstants.EmptyInlineKeyboardButton,
+            new[] {
+                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+            }
+        };
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "При выборе шаблона, ваши записи на этот жень удалятся!",
+            replyMarkup: new InlineKeyboardMarkup(rows));
     }
 }

@@ -23,6 +23,8 @@ public class PublicConstants
     public const string DeleteDayTimeTable = @"^TI_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string ChooseTimeTimeTable = @"^TJ_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string EditTimeTimeTable = @"^TK(.)_(\w*)$"; // idWirkTime
+    public const string MenuTemplateTimeTable = @"^TL_(.{2})_(.{2})_(.{4})$"; // day_month_year
+    public const string CreateTemplateTimeTable = @"^TM_(.{2})_(.{2})_(.{4})$"; // day_month_year
     #endregion
 
     #region Dates
@@ -35,7 +37,7 @@ public class PublicConstants
     public const string timeFormat = "HH:mm";
 
     public static readonly InlineKeyboardButton[] EmptyInlineKeyboardButton = {
-        InlineKeyboardButton.WithCallbackData("...............................................................................", "\0")};
+        InlineKeyboardButton.WithCallbackData("…______________________________________________________________________________________", "\0")};
 
     public static readonly InlineKeyboardMarkup MenuMarkup = new(new[]
     {

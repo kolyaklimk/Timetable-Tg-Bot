@@ -171,6 +171,16 @@ public class TgBot
 
                                 await TimeTableCommands.EditTimeTimeTable(null, callbackQuery?.Data, context, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId, callbackQuery);
                                 return;
+
+                            // Menu template
+                            case 'L':
+                                await TimeTableCommands.MenuTemplateTimeTable(callbackQuery, botClient);
+                                return;
+
+                            // Create template
+                            case 'M':
+                                await TimeTableCommands.CreateTemplateTimeTable(callbackQuery, botClient);
+                                return;
                         }
                         return;
 
