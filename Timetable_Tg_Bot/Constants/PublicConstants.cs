@@ -13,9 +13,9 @@ public class PublicConstants
 
     #region TimeTable
     public const string ChooseMonthTimeTable = @"^TA_(.{2})_(.{4})$"; // month_year
-    public const string ChooseHourTimeTable = @"^T(.)_(.{2})_(.{2})_(.{4})$"; // day_month_year
-    public const string ChooseMinuteTimeTable = @"^T(.)_(.{2})_(.{2})_(.{2})_(.{4})$"; // hour_day_month_year
-    public const string ChooseIsBusyTimeTable = @"^T(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$"; // minute_hour_day_month_year
+    public const string ChooseHourTimeTable = @"^T(.)_(.{2})_(.{2})_(.{4})$"; // (B_M)_day_month_year
+    public const string ChooseMinuteTimeTable = @"^T(.)_(.{2})_(.{2})_(.{2})_(.{4})$"; // (C_N)_hour_day_month_year
+    public const string ChooseIsBusyTimeTable = @"^T(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$"; // (D_O)_minute_hour_day_month_year
     public const string AddDescriptionTimeTable = @"^TE(.)_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// deleteDescription_true\false_minute_hour_day_month_year
     public const string SaveTimeTable = @"^TF_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// true\false_minute_hour_day_month_year
     public const string MenuDayTimeTable = @"^TG_(.{2})_(.{2})_(.{4})$"; // day_month_year
@@ -24,7 +24,6 @@ public class PublicConstants
     public const string ChooseTimeTimeTable = @"^TJ_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string EditTimeTimeTable = @"^TK(.)_(\w*)$"; // idWirkTime
     public const string MenuTemplateTimeTable = @"^TL_(.{2})_(.{2})_(.{4})$"; // day_month_year
-    public const string CreateTemplateTimeTable = @"^TM_(.{2})_(.{2})_(.{4})$"; // day_month_year
     #endregion
 
     #region Dates

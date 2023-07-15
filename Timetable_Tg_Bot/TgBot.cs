@@ -177,9 +177,19 @@ public class TgBot
                                 await TimeTableCommands.MenuTemplateTimeTable(callbackQuery, botClient);
                                 return;
 
-                            // Create template
+                            // Create template -> Choose hour
                             case 'M':
-                                await TimeTableCommands.CreateTemplateTimeTable(callbackQuery, botClient);
+                                await TimeTableCommands.ChooseHourTimeTable('N', 'L', callbackQuery, botClient);
+                                return;
+
+                            // Create template -> Choose minute
+                            case 'N':
+                                await TimeTableCommands.ChooseMinuteTimeTable('O', 'M', callbackQuery, botClient);
+                                return;
+
+                            // Create template -> Choose isBusy
+                            case 'O':
+                                await TimeTableCommands.ChooseIsBusyTimeTable("Edit template", 'N', callbackQuery, botClient);
                                 return;
                         }
                         return;
