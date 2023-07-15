@@ -170,61 +170,23 @@ public static class TimeTableCommands
         string year = match.Groups[3].Value;
 
         // Hours
-        var rows = new InlineKeyboardButton[][]
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for(var i = 0; i < 24;)
         {
-            new[] {
-                "\0",
-                InlineKeyboardButton.WithCallbackData("22", $"TC_22_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("23", $"TC_23_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("00", $"TC_00_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("01", $"TC_01_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("02", $"TC_02_{day}_{month}_{year}"),
-                "\0",
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("20", $"TC_20_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("21", $"TC_21_{day}_{month}_{year}"),
-                "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("03", $"TC_03_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("04", $"TC_04_{day}_{month}_{year}"),
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("19", $"TC_19_{day}_{month}_{year}"),
-                "\0","\0","\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("05", $"TC_05_{day}_{month}_{year}"),
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("18", $"TC_18_{day}_{month}_{year}"),
-                "\0","\0","\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("06", $"TC_06_{day}_{month}_{year}"),
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("17", $"TC_17_{day}_{month}_{year}"),
-                "\0","\0","\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("07", $"TC_07_{day}_{month}_{year}"),
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("16", $"TC_16_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("15", $"TC_15_{day}_{month}_{year}"),
-                "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("09", $"TC_09_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("08", $"TC_08_{day}_{month}_{year}"),
-            },
-            new[] {
-                "\0",
-                InlineKeyboardButton.WithCallbackData("14", $"TC_14_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("13", $"TC_13_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("12", $"TC_12_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("11", $"TC_11_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("10", $"TC_10_{day}_{month}_{year}"),
-                "\0",
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+            var row = new InlineKeyboardButton[6];
+            for(var j = 0; j < 6; j++)
+            {
+                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"TC_{i:00}_{day}_{month}_{year}");
+                i++;
             }
-        };
+            rows.Add(row);
+        }
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+            InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
+        });
 
         // Send message
         await botClient.EditMessageTextAsync(
@@ -244,44 +206,24 @@ public static class TimeTableCommands
         string month = match.Groups[3].Value;
         string year = match.Groups[4].Value;
 
-        // Hours
-        var rows = new InlineKeyboardButton[][]
+        // Minute
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for(var i = 0; i < 60;)
         {
-            new[] {
-                "\0",
-                InlineKeyboardButton.WithCallbackData("55",$"TD_55_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("00",$"TD_00_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("05",$"TD_05_{hour}_{day}_{month}_{year}"),
-                "\0",
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("50",$"TD_50_{hour}_{day}_{month}_{year}"),
-                "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("10",$"TD_10_{hour}_{day}_{month}_{year}"),
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("45",$"TD_45_{hour}_{day}_{month}_{year}"),
-                "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("15",$"TD_15_{hour}_{day}_{month}_{year}"),
-            },
-            new[] {
-                InlineKeyboardButton.WithCallbackData("40",$"TD_40_{hour}_{day}_{month}_{year}"),
-                "\0","\0","\0",
-                InlineKeyboardButton.WithCallbackData("20",$"TD_20_{hour}_{day}_{month}_{year}"),
-            },
-            new[] {
-                "\0",
-                InlineKeyboardButton.WithCallbackData("35",$"TD_55_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("30",$"TD_30_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("25",$"TD_25_{hour}_{day}_{month}_{year}"),
-                "\0",
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new[] {
-                InlineKeyboardButton.WithCallbackData("Назад",$"TB_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+            var row = new InlineKeyboardButton[6];
+            for(var j = 0; j < 6; j++)
+            {
+                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"TD_{i:00}_{hour}_{day}_{month}_{year}");
+                i+=5;
             }
-        };
+            rows.Add(row);
+        }
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+            InlineKeyboardButton.WithCallbackData("Назад", $"TB_{day}_{month}_{year}"),
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
+        });
 
         // Send message
         await botClient.EditMessageTextAsync(
