@@ -5,12 +5,13 @@ using TimetableTgBot.Entities;
 using User = TimetableTgBot.Entities.User;
 using UserTg = Telegram.Bot.Types.User;
 
-public class BotDbContext : DbContext
+public class BotDbContext: DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<WorkTime> WorkTimes { get; set; }
     public DbSet<UserState> UserStates { get; set; }
     public DbSet<UserBuffer> UserBuffers { get; set; }
+    public DbSet<TimeTableTemplate> TimeTableTemplates { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -30,6 +31,11 @@ public class BotDbContext : DbContext
     public async Task<UserBuffer?> GetUserBufferAsync(UserTg user)
     {
         return await UserBuffers.FirstOrDefaultAsync(arg => arg.UserId == user.Id);
+    }
+
+    public async Task<TimeTableTemplate?> GetTimeTableTemplateAsync(UserTg user)
+    {
+        return await TimeTableTemplates.FirstOrDefaultAsync(arg => arg.UserId == user.Id);
     }
 
     public void UpdateUserStateAsync(UserState userState, bool waitingForText)
