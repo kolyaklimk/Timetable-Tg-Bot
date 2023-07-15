@@ -124,17 +124,17 @@ public class TgBot
 
                             // Choose hour
                             case 'B':
-                                await TimeTableCommands.ChooseHourTimeTable(callbackQuery, botClient);
+                                await TimeTableCommands.ChooseHourTimeTable('C', 'G', callbackQuery, botClient);
                                 return;
 
                             // Choose minute
                             case 'C':
-                                await TimeTableCommands.ChooseMinuteTimeTable(callbackQuery, botClient);
+                                await TimeTableCommands.ChooseMinuteTimeTable('D', 'B', callbackQuery, botClient);
                                 return;
 
                             // Choose is busy
                             case 'D':
-                                await TimeTableCommands.ChooseIsBusyTimeTable(callbackQuery, botClient);
+                                await TimeTableCommands.ChooseIsBusyTimeTable("EN", 'C', callbackQuery, botClient);
                                 return;
 
                             // Add description

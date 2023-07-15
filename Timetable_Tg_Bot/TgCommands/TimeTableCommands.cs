@@ -161,13 +161,13 @@ public static class TimeTableCommands
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
-    public static async Task ChooseHourTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseHourTimeTable(char next, char previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseHourTimeTable);
 
-        string day = match.Groups[1].Value;
-        string month = match.Groups[2].Value;
-        string year = match.Groups[3].Value;
+        string day = match.Groups[2].Value;
+        string month = match.Groups[3].Value;
+        string year = match.Groups[4].Value;
 
         // Hours
         var rows = new List<InlineKeyboardButton[]>();
@@ -177,14 +177,14 @@ public static class TimeTableCommands
             var row = new InlineKeyboardButton[6];
             for(var j = 0; j < 6; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"TC_{i:00}_{day}_{month}_{year}");
+                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}_{i:00}_{day}_{month}_{year}");
                 i++;
             }
             rows.Add(row);
         }
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}_{day}_{month}_{year}"),
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
         });
 
@@ -197,14 +197,14 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2);
     }
 
-    public static async Task ChooseMinuteTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseMinuteTimeTable(char next, char previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseMinuteTimeTable);
 
-        string hour = match.Groups[1].Value;
-        string day = match.Groups[2].Value;
-        string month = match.Groups[3].Value;
-        string year = match.Groups[4].Value;
+        string hour = match.Groups[2].Value;
+        string day = match.Groups[3].Value;
+        string month = match.Groups[4].Value;
+        string year = match.Groups[5].Value;
 
         // Minute
         var rows = new List<InlineKeyboardButton[]>();
@@ -214,14 +214,14 @@ public static class TimeTableCommands
             var row = new InlineKeyboardButton[6];
             for(var j = 0; j < 6; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"TD_{i:00}_{hour}_{day}_{month}_{year}");
-                i+=5;
+                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}_{i:00}_{hour}_{day}_{month}_{year}");
+                i += 5;
             }
             rows.Add(row);
         }
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"TB_{day}_{month}_{year}"),
+            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}_{day}_{month}_{year}"),
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
         });
 
@@ -236,27 +236,27 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2);
     }
 
-    public static async Task ChooseIsBusyTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseIsBusyTimeTable(string next, char previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseIsBusyTimeTable);
 
-        string minute = match.Groups[1].Value;
-        string hour = match.Groups[2].Value;
-        string day = match.Groups[3].Value;
-        string month = match.Groups[4].Value;
-        string year = match.Groups[5].Value;
+        string minute = match.Groups[2].Value;
+        string hour = match.Groups[3].Value;
+        string day = match.Groups[4].Value;
+        string month = match.Groups[5].Value;
+        string year = match.Groups[6].Value;
 
         var rows = new InlineKeyboardButton[][]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Свободно",$"TEN_0_{minute}_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Запись", $"TEN_1_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Свободно",$"T{next}_0_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Запись", $"T{next}_1_{minute}_{hour}_{day}_{month}_{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TC_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}_{hour}_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
@@ -503,37 +503,6 @@ public static class TimeTableCommands
             {
                 InlineKeyboardButton.WithCallbackData("Создать", $"TM_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Выбрать", "\0"),
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
-            }
-        };
-
-        // Send message
-        await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            "При выборе шаблона, ваши записи на этот жень удалятся!",
-            replyMarkup: new InlineKeyboardMarkup(rows));
-    }
-
-    public static async Task CreateTemplateTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
-    {
-        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.CreateTemplateTimeTable);
-
-        string day = match.Groups[1].Value;
-        string month = match.Groups[2].Value;
-        string year = match.Groups[3].Value;
-
-        // Times
-        var rows = new InlineKeyboardButton[][]
-        {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("Создать",""),
-                InlineKeyboardButton.WithCallbackData("Выбрать", ""),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[] {
