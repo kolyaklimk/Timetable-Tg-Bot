@@ -518,4 +518,22 @@ public static class TimeTableCommands
             "При выборе шаблона, ваши записи на этот жень удалятся!",
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
+
+    public static async Task CreateNewTemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.CreateNewTemplateTimeTable);
+
+        string isBusy = match.Groups[1].Value;
+        string minute = match.Groups[2].Value;
+        string hour = match.Groups[3].Value;
+        string day = match.Groups[4].Value;
+        string month = match.Groups[5].Value;
+        string year = match.Groups[6].Value;
+
+        var template = await context.GetTimeTableTemplateAsync(callbackQuery.From);
+        template.Template.Last().Add(new Entities.WorkTime
+        {
+            // надо сделать загрузку темплейта
+        });
+    }
 }
