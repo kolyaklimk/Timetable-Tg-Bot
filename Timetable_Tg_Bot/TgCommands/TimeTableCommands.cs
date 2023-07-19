@@ -574,7 +574,7 @@ public static class TimeTableCommands
 
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TL_{day}_{month}_{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         });
 
@@ -595,17 +595,18 @@ public static class TimeTableCommands
         string month = match.Groups[3].Value;
         string year = match.Groups[4].Value;
         string idTemplate = match.Groups[5].Value;
-        Console.WriteLine(callbackQuery.Data);
+
         switch (property)
         {
+            // View
             case '0':
                 var rows = new InlineKeyboardButton[][] {
                     new[]{
                         InlineKeyboardButton.WithCallbackData("Удалить",$"TR1_{day}_{month}_{year}_{idTemplate}"),
-                        InlineKeyboardButton.WithCallbackData("Изменить", $"TR2_{day}_{month}_{year}_{idTemplate}"),
+                        InlineKeyboardButton.WithCallbackData("Изменить", $"TS_{day}_{month}_{year}_{idTemplate}"),
                     },
                     new[]{
-                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR3_{day}_{month}_{year}"),
+                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR2_{day}_{month}_{year}"),
                     },
                     PublicConstants.EmptyInlineKeyboardButton,
                     new[]{
@@ -632,6 +633,7 @@ public static class TimeTableCommands
                     replyMarkup: new InlineKeyboardMarkup(rows));
                 return;
 
+            // Delete
             case '1':
                 var templateRemove = await context.TimeTableTemplates
                     .Include(arg => arg.Template)
@@ -644,6 +646,54 @@ public static class TimeTableCommands
                 callbackQuery.Data = $"TQ_{day}_{month}_{year}";
                 await ChooseTemplateTimeTable(context, callbackQuery, botClient);
                 return;
+
+            case '2':
+
+                return;
         }
+    }
+
+    public static async Task EditTemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateTimeTable);
+
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+        string idTemplate = match.Groups[4].Value;
+
+        var template = await context.TimeTableTemplates
+            .Include(arg => arg.Template)
+            .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
+
+        // Times
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for (var i = 0; i < template.Template.Count;)
+        {
+            var row = new InlineKeyboardButton[(template.Template.Count - i) >= 4 ? 4 : (template.Template.Count - i) % 4];
+            for (var j = 0; j < row.Length; j++)
+            {
+                row[j] = InlineKeyboardButton.WithCallbackData(
+                    $"{template.Template.ElementAt(i).Start.Hour}:{template.Template.ElementAt(i).Start.Minute}",
+                    $"TT0_{day}_{month}_{year}_{template.Template.ElementAt(i).Id}");
+                i++;
+            }
+            rows.Add(row);
+        }
+
+        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Добавить", "\0") });
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+                InlineKeyboardButton.WithCallbackData("Назад", $"TR0_{day}_{month}_{year}_{idTemplate}"),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+        });
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "Выберите что-нибудь:",
+            replyMarkup: new InlineKeyboardMarkup(rows));
     }
 }

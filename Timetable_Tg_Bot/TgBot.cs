@@ -206,6 +206,11 @@ public class TgBot
                             case 'R':
                                 await TimeTableCommands.TemplateTimeTable(context, callbackQuery, botClient);
                                 return;
+
+                            // Edit template
+                            case 'S':
+                                await TimeTableCommands.EditTemplateTimeTable(context, callbackQuery, botClient);
+                                return;
                         }
                         return;
 
