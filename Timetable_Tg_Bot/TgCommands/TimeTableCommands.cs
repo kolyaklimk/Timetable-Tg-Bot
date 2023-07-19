@@ -595,7 +595,7 @@ public static class TimeTableCommands
         string month = match.Groups[3].Value;
         string year = match.Groups[4].Value;
         string idTemplate = match.Groups[5].Value;
-
+        Console.WriteLine(callbackQuery.Data);
         switch (property)
         {
             case '0':
@@ -630,6 +630,19 @@ public static class TimeTableCommands
                     callbackQuery.Message.MessageId,
                     $"Вы выбрали:\n {text}\nВыбери что сделать:",
                     replyMarkup: new InlineKeyboardMarkup(rows));
+                return;
+
+            case '1':
+                var templateRemove = await context.TimeTableTemplates
+                    .Include(arg => arg.Template)
+                    .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
+
+                context.WorkTimes.RemoveRange(templateRemove.Template);
+                context.TimeTableTemplates.Remove(templateRemove);
+                await context.SaveChangesAsync();
+
+                callbackQuery.Data = $"TQ_{day}_{month}_{year}";
+                await ChooseTemplateTimeTable(context, callbackQuery, botClient);
                 return;
         }
     }
