@@ -440,11 +440,7 @@ public static class TimeTableCommands
                 goto default;
 
             case '1':
-                time.IsBusy = false;
-                goto default;
-
-            case '2':
-                time.IsBusy = true;
+                time.IsBusy = !time.IsBusy;
                 goto default;
 
             default:
@@ -459,7 +455,7 @@ public static class TimeTableCommands
                     InlineKeyboardButton.WithCallbackData("Удалить",$"TKD_{idWorkTime}"),
                     time.IsBusy
                     ? InlineKeyboardButton.WithCallbackData("Свободно", $"TK1_{idWorkTime}")
-                    : InlineKeyboardButton.WithCallbackData("Занято", $"TK2_{idWorkTime}")
+                    : InlineKeyboardButton.WithCallbackData("Занято", $"TK1_{idWorkTime}")
                 },
                 new[]
                 {
@@ -554,19 +550,21 @@ public static class TimeTableCommands
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        var templates = await context.TimeTableTemplates.Where(arg => arg.UserId == callbackQuery.From.Id).ToListAsync();
+        var templates = await context.Users
+            .Include(arg => arg.TimeTableTemplates)
+            .FirstOrDefaultAsync(arg => arg.Id == callbackQuery.From.Id);
 
         // Templates
         var rows = new List<InlineKeyboardButton[]>();
 
-        for (var i = 0; i < templates.Count;)
+        for (var i = 0; i < templates.TimeTableTemplates.Count;)
         {
-            var row = new InlineKeyboardButton[(templates.Count - i) >= 6 ? 6 : (templates.Count - i) % 6];
+            var row = new InlineKeyboardButton[(templates.TimeTableTemplates.Count - i) >= 6 ? 6 : (templates.TimeTableTemplates.Count - i) % 6];
             for (var j = 0; j < row.Length; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
                     $"{i + 1}",
-                    $"TR0_{day}_{month}_{year}_{templates[i].Id}");
+                    $"TR0_{day}_{month}_{year}_{templates.TimeTableTemplates.ElementAt(i).Id}");
                 i++;
             }
             rows.Add(row);
@@ -695,5 +693,58 @@ public static class TimeTableCommands
             callbackQuery.Message.MessageId,
             "Выберите что-нибудь:",
             replyMarkup: new InlineKeyboardMarkup(rows));
+    }
+
+    public static async Task EditTimeTemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTimeTemplateTimeTable);
+
+        char property = match.Groups[1].Value[0];
+        string day = match.Groups[2].Value;
+        string month = match.Groups[3].Value;
+        string year = match.Groups[4].Value;
+        string idWorkTime = match.Groups[5].Value;
+
+        var workTime = await context.WorkTimes.FirstOrDefaultAsync(arg => arg.Id == long.Parse(idWorkTime));
+
+        switch (property)
+        {
+            case '1':
+                context.WorkTimes.Remove(workTime);
+                await context.SaveChangesAsync();
+                callbackQuery.Data = $"TS_{day}_{month}_{year}_{workTime.TimeTableTemplateId}";
+                await EditTemplateTimeTable(context, callbackQuery, botClient);
+                return;
+
+            case '2':
+                workTime.IsBusy = !workTime.IsBusy;
+                await context.SaveChangesAsync();
+                goto default;
+
+            default:
+                var rows = new InlineKeyboardButton[][]
+                {
+                    new[] {
+                        InlineKeyboardButton.WithCallbackData("Удалить", $"TT1_{day}_{month}_{year}_{idWorkTime}"),
+
+                        workTime.IsBusy
+                        ? InlineKeyboardButton.WithCallbackData("Свободно", $"TT2_{day}_{month}_{year}_{idWorkTime}")
+                        : InlineKeyboardButton.WithCallbackData("Занято", $"TT2_{day}_{month}_{year}_{idWorkTime}"),
+                    },
+                    PublicConstants.EmptyInlineKeyboardButton,
+                    new[] {
+                        InlineKeyboardButton.WithCallbackData("Назад", $"TS_{day}_{month}_{year}_{workTime.TimeTableTemplateId}"),
+                        InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+                    }
+                };
+
+                // Send message
+                await botClient.EditMessageTextAsync(
+                    callbackQuery.Message.Chat.Id,
+                    callbackQuery.Message.MessageId,
+                    $"Вы выбрали: {workTime.Start.ToString(PublicConstants.timeFormat)} - {workTime.IsBusy}\nВыберите что-нибудь:",
+                    replyMarkup: new InlineKeyboardMarkup(rows));
+                return;
+        }
     }
 }
