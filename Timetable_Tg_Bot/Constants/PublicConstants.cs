@@ -25,6 +25,8 @@ public class PublicConstants
     public const string EditTimeTimeTable = @"^TK(.)_(\w*)$"; // idWirkTime
     public const string MenuTemplateTimeTable = @"^TL_(.{2})_(.{2})_(.{4})$"; // day_month_year
     public const string CreateNewTemplateTimeTable = @"^TP_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$"; // true\false_minute_hour_day_month_year
+    public const string ChooseTemplateTimeTable = @"^TQ_(.{2})_(.{2})_(.{4})$"; // day_month_year
+    public const string TemplateTimeTable = @"^TR(.)_(.{2})_(.{2})_(.{4})_(\w*)$"; // property_day_month_year_IdTemplate
     #endregion
 
     #region Dates

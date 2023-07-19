@@ -44,7 +44,7 @@ public static class TimeTableCommands
         string year = match.Groups[2].Value;
 
 
-        if(SavedCalendars.TryGetValue($"{month}_{year}", out InlineKeyboardMarkup markup))
+        if (SavedCalendars.TryGetValue($"{month}_{year}", out InlineKeyboardMarkup markup))
         { }
         else
         {
@@ -63,13 +63,13 @@ public static class TimeTableCommands
 
             // Calendar
             int currentDay = 1;
-            while(currentDay <= daysInMonth)
+            while (currentDay <= daysInMonth)
             {
                 var row = new InlineKeyboardButton[7];
 
-                for(int i = 0; i < 7; i++)
+                for (int i = 0; i < 7; i++)
                 {
-                    if(currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
+                    if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                     {
                         row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG_{currentDay:00}_{month}_{year}");
                         currentDay++;
@@ -124,7 +124,7 @@ public static class TimeTableCommands
             .ToListAsync();
 
         var stringBuilder = new StringBuilder();
-        foreach(var item in dayTimetable)
+        foreach (var item in dayTimetable)
         {
             stringBuilder.AppendLine($"{item.Start.Hour:00}:{item.Start.Minute:00} \\- {item.IsBusy} \\- {item.Description}\n");
         }
@@ -172,10 +172,10 @@ public static class TimeTableCommands
         // Hours
         var rows = new List<InlineKeyboardButton[]>();
 
-        for(var i = 0; i < 24;)
+        for (var i = 0; i < 24;)
         {
             var row = new InlineKeyboardButton[6];
-            for(var j = 0; j < 6; j++)
+            for (var j = 0; j < 6; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}_{i:00}_{day}_{month}_{year}");
                 i++;
@@ -209,10 +209,10 @@ public static class TimeTableCommands
         // Minute
         var rows = new List<InlineKeyboardButton[]>();
 
-        for(var i = 0; i < 60;)
+        for (var i = 0; i < 60;)
         {
             var row = new InlineKeyboardButton[6];
-            for(var j = 0; j < 6; j++)
+            for (var j = 0; j < 6; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}_{i:00}_{hour}_{day}_{month}_{year}");
                 i += 5;
@@ -384,10 +384,10 @@ public static class TimeTableCommands
         // Times
         var rows = new List<InlineKeyboardButton[]>();
 
-        for(var i = 0; i < times.Count;)
+        for (var i = 0; i < times.Count;)
         {
             var row = new InlineKeyboardButton[(times.Count - i) >= 4 ? 4 : (times.Count - i) % 4];
-            for(var j = 0; j < row.Length; j++)
+            for (var j = 0; j < row.Length; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
                     $"{times[i].Start.Hour}:{times[i].Start.Minute:00}",
@@ -419,7 +419,7 @@ public static class TimeTableCommands
         string idWorkTime = match.Groups[2].Value;
         var time = await context.WorkTimes.FirstOrDefaultAsync(arg => arg.Id == long.Parse(idWorkTime));
 
-        switch(index)
+        switch (index)
         {
             case 'D':
                 context.WorkTimes.Remove(time);
@@ -431,7 +431,7 @@ public static class TimeTableCommands
                 return;
 
             case 'R':
-                if(time.Description == null)
+                if (time.Description == null)
                 {
                     botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
                     return;
@@ -448,7 +448,7 @@ public static class TimeTableCommands
                 goto default;
 
             default:
-                if(newDescription != null)
+                if (newDescription != null)
                     time.Description = newDescription;
                 await context.SaveChangesAsync();
 
@@ -502,7 +502,7 @@ public static class TimeTableCommands
             new[]
             {
                 InlineKeyboardButton.WithCallbackData("Создать", $"TM_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Выбрать", "\0"),
+                InlineKeyboardButton.WithCallbackData("Выбрать", $"TQ_{day}_{month}_{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[] {
@@ -533,17 +533,104 @@ public static class TimeTableCommands
         var template = await context.TimeTableTemplates.AddAsync(new Entities.TimeTableTemplate
         {
             UserId = callbackQuery.From.Id,
-            Template = new List<Entities.WorkTime>
-            {
-                new Entities.WorkTime{
-                    UserId = callbackQuery.From.Id,
-                    IsBusy = isBusy == "1",
-                    Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
-                },
-            }
+        });
+        template.Entity.Template.Add(new Entities.WorkTime
+        {
+            UserId = callbackQuery.From.Id,
+            IsBusy = isBusy == "1",
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
         });
         await context.SaveChangesAsync();
 
-        // открыть менюшку с template
+        callbackQuery.Data = $"TR0_{day}_{month}_{year}_{template.Entity.Id}";
+        await TemplateTimeTable(context, callbackQuery, botClient);
+    }
+
+    public static async Task ChooseTemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseTemplateTimeTable);
+
+        string day = match.Groups[1].Value;
+        string month = match.Groups[2].Value;
+        string year = match.Groups[3].Value;
+
+        var templates = await context.TimeTableTemplates.Where(arg => arg.UserId == callbackQuery.From.Id).ToListAsync();
+
+        // Templates
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for (var i = 0; i < templates.Count;)
+        {
+            var row = new InlineKeyboardButton[(templates.Count - i) >= 6 ? 6 : (templates.Count - i) % 6];
+            for (var j = 0; j < row.Length; j++)
+            {
+                row[j] = InlineKeyboardButton.WithCallbackData(
+                    $"{i + 1}",
+                    $"TR0_{day}_{month}_{year}_{templates[i].Id}");
+                i++;
+            }
+            rows.Add(row);
+        }
+
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+        });
+
+        // Send message
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "Выберите номер шаблона:",
+            replyMarkup: new InlineKeyboardMarkup(rows));
+    }
+
+    public static async Task TemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.TemplateTimeTable);
+
+        char property = match.Groups[1].Value[0];
+        string day = match.Groups[2].Value;
+        string month = match.Groups[3].Value;
+        string year = match.Groups[4].Value;
+        string idTemplate = match.Groups[5].Value;
+
+        switch (property)
+        {
+            case '0':
+                var rows = new InlineKeyboardButton[][] {
+                    new[]{
+                        InlineKeyboardButton.WithCallbackData("Удалить",$"TR1_{day}_{month}_{year}_{idTemplate}"),
+                        InlineKeyboardButton.WithCallbackData("Изменить", $"TR2_{day}_{month}_{year}_{idTemplate}"),
+                    },
+                    new[]{
+                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR3_{day}_{month}_{year}"),
+                    },
+                    PublicConstants.EmptyInlineKeyboardButton,
+                    new[]{
+                        InlineKeyboardButton.WithCallbackData("Назад", $"TQ_{day}_{month}_{year}"),
+                        InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+                    }
+                };
+
+                var template = await context.TimeTableTemplates
+                    .Include(arg => arg.Template)
+                    .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
+
+                var text = new StringBuilder();
+                foreach (var item in template.Template)
+                {
+                    text.AppendLine($"{item.Start.ToString(PublicConstants.timeFormat)} - {item.IsBusy}");
+                }
+
+                // Send message
+                await botClient.EditMessageTextAsync(
+                    callbackQuery.Message.Chat.Id,
+                    callbackQuery.Message.MessageId,
+                    $"Вы выбрали:\n {text}\nВыбери что сделать:",
+                    replyMarkup: new InlineKeyboardMarkup(rows));
+                return;
+        }
     }
 }
