@@ -189,12 +189,12 @@ public class TgBot
 
                             // Create template -> Choose isBusy
                             case 'O':
-                                await TimeTableCommands.ChooseIsBusyTimeTable("Edit template", 'N', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseIsBusyTimeTable("P", 'N', callbackQuery, botClient);
                                 return;
 
                             // Create new template
                             case 'P':
-                                await TimeTableCommands.ChooseIsBusyTimeTable("Edit template", 'N', callbackQuery, botClient);
+                                await TimeTableCommands.CreateNewTemplateTimeTable(context, callbackQuery, botClient);
                                 return;
                         }
                         return;

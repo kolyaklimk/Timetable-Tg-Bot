@@ -530,10 +530,20 @@ public static class TimeTableCommands
         string month = match.Groups[5].Value;
         string year = match.Groups[6].Value;
 
-        var template = await context.GetTimeTableTemplateAsync(callbackQuery.From);
-        template.Template.Last().Add(new Entities.WorkTime
+        var template = await context.TimeTableTemplates.AddAsync(new Entities.TimeTableTemplate
         {
-            // надо сделать загрузку темплейта
+            UserId = callbackQuery.From.Id,
+            Template = new List<Entities.WorkTime>
+            {
+                new Entities.WorkTime{
+                    UserId = callbackQuery.From.Id,
+                    IsBusy = isBusy == "1",
+                    Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
+                },
+            }
         });
+        await context.SaveChangesAsync();
+
+        // открыть менюшку с template
     }
 }
