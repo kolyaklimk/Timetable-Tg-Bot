@@ -440,7 +440,7 @@ public static class TimeTableCommands
                 if (time.Description == null)
                 {
                     botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                    return;
+                    break;
                 }
                 time.Description = null;
                 goto default;
@@ -452,28 +452,24 @@ public static class TimeTableCommands
             default:
                 if (newDescription != null)
                     time.Description = newDescription;
-                await context.SaveChangesAsync();
 
                 var rows = new InlineKeyboardButton[][]
                 {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Удалить",$"TKD{idWorkTime}"),
-                    time.IsBusy
-                    ? InlineKeyboardButton.WithCallbackData("Свободно", $"TK1{idWorkTime}")
-                    : InlineKeyboardButton.WithCallbackData("Занято", $"TK1{idWorkTime}")
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Удалить описание", $"TKR{idWorkTime}"),
-                },
-                PublicConstants.EmptyInlineKeyboardButton,
-                new[] {
-                    InlineKeyboardButton.WithCallbackData("Назад", $"TJ{time.Date.Day :00}{time.Date.Month :00}{time.Date.Year}"),
-                    InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
-                }
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Удалить",$"TKD{idWorkTime}"),
+                        InlineKeyboardButton.WithCallbackData(time.IsBusy ?"Свободно" : "Занято", $"TK1{idWorkTime}"),
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData("Удалить описание", $"TKR{idWorkTime}"),
+                    },
+                    PublicConstants.EmptyInlineKeyboardButton,
+                    new[] {
+                        InlineKeyboardButton.WithCallbackData("Назад", $"TJ{time.Date.Day :00}{time.Date.Month :00}{time.Date.Year}"),
+                        InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+                    }
                 };
-
 
                 // Send message
                 await botClient.EditMessageTextAsync(
@@ -486,8 +482,9 @@ public static class TimeTableCommands
                     "Выбери чёнить.\nНапиши что-нибудь, чтобы изменить описание (не работает):",
                     disableWebPagePreview: true,
                     replyMarkup: new InlineKeyboardMarkup(rows));
-                return;
+                break;
         }
+        await context.SaveChangesAsync();
     }
 
     public static async Task CreateNewTemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)

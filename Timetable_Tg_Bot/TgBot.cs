@@ -67,6 +67,7 @@ public class TgBot
                 {
                     var userBuffer = await context.GetUserBufferAsync(message.From);
                     await GeneralCommands.DeleteMessage(botClient, message);
+
                     switch (userBuffer.Buffer1[1])
                     {
                         // Description in create
@@ -77,7 +78,15 @@ public class TgBot
 
                         // Description in edit time
                         case 'K':
-                            await TimeTableCommands.EditTimeTimeTable(message.Text, userBuffer.Buffer1, context, botClient, message.Chat, (int)userBuffer.Buffer2);
+                            if (userBuffer.Buffer1[2] == 'D')
+                            {
+                                context.UpdateUserStateAsync(userState, false);
+                            }
+                            else
+                            {
+                                userBuffer.Buffer1 = $"TK0{userBuffer.Buffer1[3..]}";
+                                await TimeTableCommands.EditTimeTimeTable(message.Text, userBuffer.Buffer1, context, botClient, message.Chat, (int)userBuffer.Buffer2);
+                            }
                             break;
                     }
                     await context.SaveChangesAsync();
