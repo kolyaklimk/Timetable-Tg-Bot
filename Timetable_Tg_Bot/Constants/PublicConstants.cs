@@ -23,7 +23,6 @@ public class PublicConstants
     public const string DeleteDayTimeTable = @"^TI(.{2})(.{2})(.{4})$"; // day_month_year
     public const string ChooseTimeTimeTable = @"^TJ(.{2})(.{2})(.{4})$"; // day_month_year
     public const string EditTimeTimeTable = @"^TK(.)(\w*)$"; // idWirkTime
-    public const string MenuTemplateTimeTable = @"^TL(.{2})(.{2})(.{4})$"; // day_month_year
     public const string CreateNewTemplateTimeTable = @"^TP(.)(.{2})(.{2})(.{2})(.{2})(.{4})$"; // true\false_minute_hour_day_month_year
     public const string ChooseTemplateTimeTable = @"^TQ(.{2})(.{2})(.{4})$"; // day_month_year
     public const string TemplateTimeTable = @"^TR(.)(.{2})(.{2})(.{4})(\w*)$"; // property_day_month_year_IdTemplate
