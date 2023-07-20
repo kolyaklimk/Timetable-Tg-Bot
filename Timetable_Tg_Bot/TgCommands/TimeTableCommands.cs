@@ -600,6 +600,10 @@ public static class TimeTableCommands
         string year = match.Groups[4].Value;
         string idTemplate = match.Groups[5].Value;
 
+        var template = await context.TimeTableTemplates
+            .Include(arg => arg.Template)
+            .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
+
         switch (property)
         {
             // View
@@ -610,7 +614,7 @@ public static class TimeTableCommands
                         InlineKeyboardButton.WithCallbackData("Изменить", $"TS{day}{month}{year}{idTemplate}"),
                     },
                     new[]{
-                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR2{day}{month}{year}"),
+                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR2{day}{month}{year}{idTemplate}"),
                     },
                     PublicConstants.EmptyInlineKeyboardButton,
                     new[]{
@@ -618,10 +622,6 @@ public static class TimeTableCommands
                         InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
                     }
                 };
-
-                var template = await context.TimeTableTemplates
-                    .Include(arg => arg.Template)
-                    .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
 
                 var text = new StringBuilder();
                 foreach (var item in template.Template)
@@ -639,20 +639,34 @@ public static class TimeTableCommands
 
             // Delete
             case '1':
-                var templateRemove = await context.TimeTableTemplates
-                    .Include(arg => arg.Template)
-                    .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
-
-                context.WorkTimes.RemoveRange(templateRemove.Template);
-                context.TimeTableTemplates.Remove(templateRemove);
+                context.WorkTimes.RemoveRange(template.Template);
+                context.TimeTableTemplates.Remove(template);
                 await context.SaveChangesAsync();
 
                 callbackQuery.Data = $"TQ{day}{month}{year}";
                 await ChooseTemplateTimeTable(context, callbackQuery, botClient);
                 return;
 
+            // Input template
             case '2':
+                DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+                var dayDelete = context.WorkTimes.Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate);
+                context.WorkTimes.RemoveRange(dayDelete);
 
+                foreach (var item in template.Template)
+                {
+                    await context.WorkTimes.AddAsync(new WorkTime
+                    {
+                        Date = currentDate,
+                        Start = item.Start,
+                        IsBusy = item.IsBusy,
+                        UserId = item.UserId,
+                    });
+                }
+                await context.SaveChangesAsync();
+
+                callbackQuery.Data = $"TG{day}{month}{year}";
+                await MenuDayTimeTable(context, callbackQuery, botClient);
                 return;
         }
     }
