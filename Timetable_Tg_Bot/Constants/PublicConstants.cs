@@ -12,23 +12,24 @@ public class PublicConstants
     #endregion
 
     #region TimeTable
-    public const string ChooseMonthTimeTable = @"^TA_(.{2})_(.{4})$"; // month_year
-    public const string ChooseHourTimeTable = @"^T(.)_(.{2})_(.{2})_(.{4})$"; // (B_M)_day_month_year
-    public const string ChooseMinuteTimeTable = @"^T(.)_(.{2})_(.{2})_(.{2})_(.{4})$"; // (C_N)_hour_day_month_year
-    public const string ChooseIsBusyTimeTable = @"^T(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$"; // (D_O)_minute_hour_day_month_year
-    public const string AddDescriptionTimeTable = @"^TE(.)_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// deleteDescription_true\false_minute_hour_day_month_year
-    public const string SaveTimeTable = @"^TF_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$";// true\false_minute_hour_day_month_year
-    public const string MenuDayTimeTable = @"^TG_(.{2})_(.{2})_(.{4})$"; // day_month_year
+    public const string ChooseMonthTimeTable = @"^TA(.{2})(.{4})$"; // month_year
+    public const string ChooseHourTimeTable = @"^T(.)(.{2})(.{2})(.{4})(\w*)$"; // (B_M_U)_day_month_year_otherInfo
+    public const string ChooseMinuteTimeTable = @"^T(.)(.{2})(.{2})(.{2})(.{4})(\w*)$"; // (C_N_V)_hour_day_month_year_otherInfo
+    public const string ChooseIsBusyTimeTable = @"^T(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$"; // (D_O_W)_minute_hour_day_month_year_otherInfo
+    public const string AddDescriptionTimeTable = @"^TE(.)(.)(.{2})(.{2})(.{2})(.{2})(.{4})$";// deleteDescription_true\false_minute_hour_day_month_year
+    public const string SaveTimeTable = @"^TF(.)(.{2})(.{2})(.{2})(.{2})(.{4})$";// true\false_minute_hour_day_month_year
+    public const string MenuDayTimeTable = @"^TG(.{2})(.{2})(.{4})$"; // day_month_year
     public const string MenuTimeTable = "TH";
-    public const string DeleteDayTimeTable = @"^TI_(.{2})_(.{2})_(.{4})$"; // day_month_year
-    public const string ChooseTimeTimeTable = @"^TJ_(.{2})_(.{2})_(.{4})$"; // day_month_year
-    public const string EditTimeTimeTable = @"^TK(.)_(\w*)$"; // idWirkTime
-    public const string MenuTemplateTimeTable = @"^TL_(.{2})_(.{2})_(.{4})$"; // day_month_year
-    public const string CreateNewTemplateTimeTable = @"^TP_(.)_(.{2})_(.{2})_(.{2})_(.{2})_(.{4})$"; // true\false_minute_hour_day_month_year
-    public const string ChooseTemplateTimeTable = @"^TQ_(.{2})_(.{2})_(.{4})$"; // day_month_year
-    public const string TemplateTimeTable = @"^TR(.)_(.{2})_(.{2})_(.{4})_(\w*)$"; // property_day_month_year_IdTemplate
-    public const string EditTemplateTimeTable = @"^TS_(.{2})_(.{2})_(.{4})_(\w*)$"; // day_month_year_IdTemplate
-    public const string EditTimeTemplateTimeTable = @"^TT(.)_(.{2})_(.{2})_(.{4})_(\w*)$"; // property_day_month_year_IdWorkTime
+    public const string DeleteDayTimeTable = @"^TI(.{2})(.{2})(.{4})$"; // day_month_year
+    public const string ChooseTimeTimeTable = @"^TJ(.{2})(.{2})(.{4})$"; // day_month_year
+    public const string EditTimeTimeTable = @"^TK(.)(\w*)$"; // idWirkTime
+    public const string MenuTemplateTimeTable = @"^TL(.{2})(.{2})(.{4})$"; // day_month_year
+    public const string CreateNewTemplateTimeTable = @"^TP(.)(.{2})(.{2})(.{2})(.{2})(.{4})$"; // true\false_minute_hour_day_month_year
+    public const string ChooseTemplateTimeTable = @"^TQ(.{2})(.{2})(.{4})$"; // day_month_year
+    public const string TemplateTimeTable = @"^TR(.)(.{2})(.{2})(.{4})(\w*)$"; // property_day_month_year_IdTemplate
+    public const string EditTemplateTimeTable = @"^TS(.{2})(.{2})(.{4})(\w*)$"; // day_month_year_IdTemplate
+    public const string EditTimeTemplateTimeTable = @"^TT(.)(.{2})(.{2})(.{4})(\w*)$"; // property_day_month_year_IdWorkTime
+    public const string SaveNewTimeTemplateTimeTable = @"^TX(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$"; // true\false_minute_hour_day_month_year_IdWorkTime
     #endregion
 
     #region Dates

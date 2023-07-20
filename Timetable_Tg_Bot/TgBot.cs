@@ -87,6 +87,7 @@ public class TgBot
 
             if (update.Type == UpdateType.CallbackQuery)
             {
+                Console.WriteLine(callbackQuery.Data);
                 // Check WaitingForText
                 if (userState.WaitingForText)
                 {
@@ -215,6 +216,26 @@ public class TgBot
                             // Edit time template
                             case 'T':
                                 await TimeTableCommands.EditTimeTemplateTimeTable(context, callbackQuery, botClient);
+                                return;
+
+                            // Create new time in template -> Choose hour
+                            case 'U':
+                                await TimeTableCommands.ChooseHourTimeTable('V', 'S', callbackQuery, botClient);
+                                return;
+
+                            // Create new time in template -> Choose minute
+                            case 'V':
+                                await TimeTableCommands.ChooseMinuteTimeTable('W', 'U', callbackQuery, botClient);
+                                return;
+
+                            // Create new time in template -> Choose isBusy
+                            case 'W':
+                                await TimeTableCommands.ChooseIsBusyTimeTable("X", 'V', callbackQuery, botClient);
+                                return;
+
+                            // Create new time in template -> Save new time
+                            case 'X':
+                                await TimeTableCommands.SaveNewTimeTemplateTimeTable(context, callbackQuery, botClient);
                                 return;
                         }
                         return;

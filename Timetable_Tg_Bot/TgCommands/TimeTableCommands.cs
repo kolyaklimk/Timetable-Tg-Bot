@@ -8,6 +8,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TimetableTgBot.Constants;
+using TimetableTgBot.Entities;
 
 namespace TimetableTgBot.TgCommands;
 
@@ -21,7 +22,7 @@ public static class TimeTableCommands
         {
             new [] {
                 InlineKeyboardButton.WithCallbackData("Просмотр", "\0"),
-                InlineKeyboardButton.WithCallbackData("Редактирование", $"TA_{message.Date.Month:00}_{message.Date.Year}")
+                InlineKeyboardButton.WithCallbackData("Редактирование", $"TA{message.Date.Month:00}{message.Date.Year}")
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new [] { InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu), },
@@ -71,7 +72,7 @@ public static class TimeTableCommands
                 {
                     if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                     {
-                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG_{currentDay:00}_{month}_{year}");
+                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG{currentDay:00}{month}{year}");
                         currentDay++;
                     }
                     else
@@ -87,9 +88,9 @@ public static class TimeTableCommands
             var nextMonth = currentDate.AddMonths(1);
 
             rows.Add(new[] {
-                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",callbackData: $"TA_{previousMonth.Month:00}_{previousMonth.Year}") : "\0",
+                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",callbackData: $"TA{previousMonth.Month:00}{previousMonth.Year}") : "\0",
                 PublicConstants.EmptyInlineKeyboardButton[0],
-                currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA_{nextMonth.Month:00}_{nextMonth.Year}") : "\0",
+                currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA{nextMonth.Month:00}{nextMonth.Year}") : "\0",
             });
             rows.Add(new[] {
                 InlineKeyboardButton.WithCallbackData("Назад", PublicConstants.MenuTimeTable),
@@ -135,20 +136,20 @@ public static class TimeTableCommands
 
         var rows = new InlineKeyboardButton[][] {
             new[]{
-                InlineKeyboardButton.WithCallbackData("Изменить время",$"TJ_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Выбрать время", $"TB_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Изменить время",$"TJ{day}{month}{year}"),
+                InlineKeyboardButton.WithCallbackData("Выбрать время", $"TB{day}{month}{year}"),
             },
             new[]{
-                InlineKeyboardButton.WithCallbackData("Удалить всё", $"TI_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Выбрать шаблон", $"TL_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Удалить всё", $"TI{day}{month}{year}"),
+                InlineKeyboardButton.WithCallbackData("Выбрать шаблон", $"TL{day}{month}{year}"),
             },
             new[]{
-                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TG_{previousMonth.Day :00}_{previousMonth.Month:00}_{previousMonth.Year}") : "\0",
+                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"TG{previousMonth.Day :00}{previousMonth.Month:00}{previousMonth.Year}") : "\0",
                 PublicConstants.EmptyInlineKeyboardButton[0],
-                currentDate.Year <=  callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TG_{nextMonth.Day :00}_{nextMonth.Month :00}_{nextMonth.Year}") : "\0",
+                currentDate.Year <=  callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TG{nextMonth.Day :00}{nextMonth.Month :00}{nextMonth.Year}") : "\0",
             },
             new[]{
-                InlineKeyboardButton.WithCallbackData("Назад", $"TA_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TA{month}{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
@@ -168,6 +169,7 @@ public static class TimeTableCommands
         string day = match.Groups[2].Value;
         string month = match.Groups[3].Value;
         string year = match.Groups[4].Value;
+        string otherInfo = match.Groups[5].Value;
 
         // Hours
         var rows = new List<InlineKeyboardButton[]>();
@@ -177,14 +179,16 @@ public static class TimeTableCommands
             var row = new InlineKeyboardButton[6];
             for (var j = 0; j < 6; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}_{i:00}_{day}_{month}_{year}");
+                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}{i:00}{day}{month}{year}{otherInfo}");
                 i++;
             }
             rows.Add(row);
         }
+
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}_{day}_{month}_{year}"),
+            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}{day}{month}{year}{otherInfo}"),
+
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
         });
 
@@ -205,6 +209,7 @@ public static class TimeTableCommands
         string day = match.Groups[3].Value;
         string month = match.Groups[4].Value;
         string year = match.Groups[5].Value;
+        string otherInfo = match.Groups[6].Value;
 
         // Minute
         var rows = new List<InlineKeyboardButton[]>();
@@ -214,14 +219,14 @@ public static class TimeTableCommands
             var row = new InlineKeyboardButton[6];
             for (var j = 0; j < 6; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}_{i:00}_{hour}_{day}_{month}_{year}");
+                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}{i:00}{hour}{day}{month}{year}{otherInfo}");
                 i += 5;
             }
             rows.Add(row);
         }
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}_{day}_{month}_{year}"),
+            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}{day}{month}{year}{otherInfo}"),
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
         });
 
@@ -245,18 +250,19 @@ public static class TimeTableCommands
         string day = match.Groups[4].Value;
         string month = match.Groups[5].Value;
         string year = match.Groups[6].Value;
+        string otherInfo = match.Groups[7].Value;
 
         var rows = new InlineKeyboardButton[][]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Свободно",$"T{next}_0_{minute}_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Запись", $"T{next}_1_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Свободно",$"T{next}0{minute}{hour}{day}{month}{year}{otherInfo}"),
+                InlineKeyboardButton.WithCallbackData("Запись", $"T{next}1{minute}{hour}{day}{month}{year}{otherInfo}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}{hour}{day}{month}{year}{otherInfo}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
@@ -288,17 +294,17 @@ public static class TimeTableCommands
             description == null
             ? new[]
             {
-                InlineKeyboardButton.WithCallbackData("Сохранить описания", $"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Сохранить описания", $"TF{isBusy}{minute}{hour}{day}{month}{year}"),
             }
             : new[]
             {
-                InlineKeyboardButton.WithCallbackData("Удалить описание", $"TEY_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Сохранить", $"TF_{isBusy}_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Удалить описание", $"TEY{isBusy}{minute}{hour}{day}{month}{year}"),
+                InlineKeyboardButton.WithCallbackData("Сохранить", $"TF{isBusy}{minute}{hour}{day}{month}{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TD_{minute}_{hour}_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TD{minute}{hour}{day}{month}{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
@@ -342,7 +348,7 @@ public static class TimeTableCommands
 
         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false);
 
-        callbackQuery.Data = $"TG_{day}_{month}_{year}";
+        callbackQuery.Data = $"TG{day}{month}{year}";
         await MenuDayTimeTable(context, callbackQuery, botClient);
     }
 
@@ -362,7 +368,7 @@ public static class TimeTableCommands
 
         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Записи на {day}/{month}/{year} удалены!", false);
 
-        callbackQuery.Data = $"TG_{day}_{month}_{year}";
+        callbackQuery.Data = $"TG{day}{month}{year}";
         await MenuDayTimeTable(context, callbackQuery, botClient);
     }
 
@@ -391,7 +397,7 @@ public static class TimeTableCommands
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
                     $"{times[i].Start.Hour}:{times[i].Start.Minute:00}",
-                    $"TK0_{times[i].Id}");
+                    $"TK0{times[i].Id}");
                 i++;
             }
             rows.Add(row);
@@ -399,7 +405,7 @@ public static class TimeTableCommands
 
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TG{day}{month}{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         });
 
@@ -426,7 +432,7 @@ public static class TimeTableCommands
                 await context.SaveChangesAsync();
                 await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись удалена!", false);
 
-                callbackQuery.Data = $"TG_{time.Date.Day:00}_{time.Date.Month:00}_{time.Date.Year}";
+                callbackQuery.Data = $"TG{time.Date.Day:00}{time.Date.Month:00}{time.Date.Year}";
                 await MenuDayTimeTable(context, callbackQuery, botClient);
                 return;
 
@@ -452,18 +458,18 @@ public static class TimeTableCommands
                 {
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Удалить",$"TKD_{idWorkTime}"),
+                    InlineKeyboardButton.WithCallbackData("Удалить",$"TKD{idWorkTime}"),
                     time.IsBusy
-                    ? InlineKeyboardButton.WithCallbackData("Свободно", $"TK1_{idWorkTime}")
-                    : InlineKeyboardButton.WithCallbackData("Занято", $"TK1_{idWorkTime}")
+                    ? InlineKeyboardButton.WithCallbackData("Свободно", $"TK1{idWorkTime}")
+                    : InlineKeyboardButton.WithCallbackData("Занято", $"TK1{idWorkTime}")
                 },
                 new[]
                 {
-                    InlineKeyboardButton.WithCallbackData("Удалить описание", $"TKR_{idWorkTime}"),
+                    InlineKeyboardButton.WithCallbackData("Удалить описание", $"TKR{idWorkTime}"),
                 },
                 PublicConstants.EmptyInlineKeyboardButton,
                 new[] {
-                    InlineKeyboardButton.WithCallbackData("Назад", $"TJ_{time.Date.Day :00}_{time.Date.Month :00}_{time.Date.Year}"),
+                    InlineKeyboardButton.WithCallbackData("Назад", $"TJ{time.Date.Day :00}{time.Date.Month :00}{time.Date.Year}"),
                     InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
                 }
                 };
@@ -497,12 +503,12 @@ public static class TimeTableCommands
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("Создать", $"TM_{day}_{month}_{year}"),
-                InlineKeyboardButton.WithCallbackData("Выбрать", $"TQ_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Создать", $"TM{day}{month}{year}"),
+                InlineKeyboardButton.WithCallbackData("Выбрать", $"TQ{day}{month}{year}"),
             },
             PublicConstants.EmptyInlineKeyboardButton,
             new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TG_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TG{day}{month}{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             }
         };
@@ -538,7 +544,7 @@ public static class TimeTableCommands
         });
         await context.SaveChangesAsync();
 
-        callbackQuery.Data = $"TR0_{day}_{month}_{year}_{template.Entity.Id}";
+        callbackQuery.Data = $"TR0{day}{month}{year}{template.Entity.Id}";
         await TemplateTimeTable(context, callbackQuery, botClient);
     }
 
@@ -564,7 +570,7 @@ public static class TimeTableCommands
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
                     $"{i + 1}",
-                    $"TR0_{day}_{month}_{year}_{templates.TimeTableTemplates.ElementAt(i).Id}");
+                    $"TR0{day}{month}{year}{templates.TimeTableTemplates.ElementAt(i).Id}");
                 i++;
             }
             rows.Add(row);
@@ -572,7 +578,7 @@ public static class TimeTableCommands
 
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TL_{day}_{month}_{year}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TL{day}{month}{year}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         });
 
@@ -600,15 +606,15 @@ public static class TimeTableCommands
             case '0':
                 var rows = new InlineKeyboardButton[][] {
                     new[]{
-                        InlineKeyboardButton.WithCallbackData("Удалить",$"TR1_{day}_{month}_{year}_{idTemplate}"),
-                        InlineKeyboardButton.WithCallbackData("Изменить", $"TS_{day}_{month}_{year}_{idTemplate}"),
+                        InlineKeyboardButton.WithCallbackData("Удалить",$"TR1{day}{month}{year}{idTemplate}"),
+                        InlineKeyboardButton.WithCallbackData("Изменить", $"TS{day}{month}{year}{idTemplate}"),
                     },
                     new[]{
-                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR2_{day}_{month}_{year}"),
+                        InlineKeyboardButton.WithCallbackData("Выбрать", $"TR2{day}{month}{year}"),
                     },
                     PublicConstants.EmptyInlineKeyboardButton,
                     new[]{
-                        InlineKeyboardButton.WithCallbackData("Назад", $"TQ_{day}_{month}_{year}"),
+                        InlineKeyboardButton.WithCallbackData("Назад", $"TQ{day}{month}{year}"),
                         InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
                     }
                 };
@@ -641,7 +647,7 @@ public static class TimeTableCommands
                 context.TimeTableTemplates.Remove(templateRemove);
                 await context.SaveChangesAsync();
 
-                callbackQuery.Data = $"TQ_{day}_{month}_{year}";
+                callbackQuery.Data = $"TQ{day}{month}{year}";
                 await ChooseTemplateTimeTable(context, callbackQuery, botClient);
                 return;
 
@@ -673,17 +679,17 @@ public static class TimeTableCommands
             for (var j = 0; j < row.Length; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
-                    $"{template.Template.ElementAt(i).Start.Hour}:{template.Template.ElementAt(i).Start.Minute}",
-                    $"TT0_{day}_{month}_{year}_{template.Template.ElementAt(i).Id}");
+                    $"{template.Template.ElementAt(i).Start.Hour}:{template.Template.ElementAt(i).Start.Minute:00}",
+                    $"TT0{day}{month}{year}{template.Template.ElementAt(i).Id}");
                 i++;
             }
             rows.Add(row);
         }
 
-        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Добавить", "\0") });
+        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Добавить", $"TU{day}{month}{year}{idTemplate}") });
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TR0_{day}_{month}_{year}_{idTemplate}"),
+                InlineKeyboardButton.WithCallbackData("Назад", $"TR0{day}{month}{year}{idTemplate}"),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         });
 
@@ -712,7 +718,7 @@ public static class TimeTableCommands
             case '1':
                 context.WorkTimes.Remove(workTime);
                 await context.SaveChangesAsync();
-                callbackQuery.Data = $"TS_{day}_{month}_{year}_{workTime.TimeTableTemplateId}";
+                callbackQuery.Data = $"TS{day}{month}{year}{workTime.TimeTableTemplateId}";
                 await EditTemplateTimeTable(context, callbackQuery, botClient);
                 return;
 
@@ -725,15 +731,12 @@ public static class TimeTableCommands
                 var rows = new InlineKeyboardButton[][]
                 {
                     new[] {
-                        InlineKeyboardButton.WithCallbackData("Удалить", $"TT1_{day}_{month}_{year}_{idWorkTime}"),
-
-                        workTime.IsBusy
-                        ? InlineKeyboardButton.WithCallbackData("Свободно", $"TT2_{day}_{month}_{year}_{idWorkTime}")
-                        : InlineKeyboardButton.WithCallbackData("Занято", $"TT2_{day}_{month}_{year}_{idWorkTime}"),
+                        InlineKeyboardButton.WithCallbackData("Удалить", $"TT1{day}{month}{year}{idWorkTime}"),
+                        InlineKeyboardButton.WithCallbackData(workTime.IsBusy ? "Свободно" : "Занято", $"TT2{day}{month}{year}{idWorkTime}"),
                     },
                     PublicConstants.EmptyInlineKeyboardButton,
                     new[] {
-                        InlineKeyboardButton.WithCallbackData("Назад", $"TS_{day}_{month}_{year}_{workTime.TimeTableTemplateId}"),
+                        InlineKeyboardButton.WithCallbackData("Назад", $"TS{day}{month}{year}{workTime.TimeTableTemplateId}"),
                         InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
                     }
                 };
@@ -746,5 +749,31 @@ public static class TimeTableCommands
                     replyMarkup: new InlineKeyboardMarkup(rows));
                 return;
         }
+    }
+
+    public static async Task SaveNewTimeTemplateTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.SaveNewTimeTemplateTimeTable);
+
+        string isBusy = match.Groups[1].Value;
+        string minute = match.Groups[2].Value;
+        string hour = match.Groups[3].Value;
+        string day = match.Groups[4].Value;
+        string month = match.Groups[5].Value;
+        string year = match.Groups[6].Value;
+        string idTemplate = match.Groups[7].Value;
+
+        await context.WorkTimes.AddAsync(new WorkTime
+        {
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
+            IsBusy = "1" == isBusy,
+            UserId = callbackQuery.From.Id,
+            TimeTableTemplateId = long.Parse(idTemplate),
+        });
+
+        await context.SaveChangesAsync();
+
+        callbackQuery.Data = $"TS{day}{month}{year}{idTemplate}";
+        await EditTemplateTimeTable(context, callbackQuery, botClient);
     }
 }
