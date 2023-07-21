@@ -117,11 +117,6 @@ public class TgBot
                     case 'T':
                         switch (callbackQuery?.Data[1])
                         {
-                            // Menu 
-                            case 'H':
-                                await TimeTableCommands.MenuTimeTable(botClient, callbackQuery.Message);
-                                return;
-
                             // Choose Date
                             case 'A':
                                 await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);

@@ -16,27 +16,6 @@ public static class TimeTableCommands
 {
     private static ConcurrentDictionary<string, InlineKeyboardMarkup> SavedCalendars = new();
 
-    public static async Task MenuTimeTable(ITelegramBotClient botClient, Message message)
-    {
-        var timeTableMenuMarkup = new InlineKeyboardMarkup(new[]
-        {
-            new [] {
-                InlineKeyboardButton.WithCallbackData("Просмотр", "\0"),
-                InlineKeyboardButton.WithCallbackData("Редактирование", $"TA{message.Date.Month:00}{message.Date.Year}")
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new [] { InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu), },
-        });
-
-        // Send message
-        await botClient.EditMessageTextAsync(
-            message.Chat.Id,
-            message.MessageId,
-            "Меню расписания:",
-            replyMarkup: timeTableMenuMarkup,
-            parseMode: ParseMode.MarkdownV2);
-    }
-
     public static async Task ChooseDateTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery.Data, PublicConstants.ChooseMonthTimeTable);
@@ -93,7 +72,7 @@ public static class TimeTableCommands
                 currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA{nextMonth.Month:00}{nextMonth.Year}") : "\0",
             });
             rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", PublicConstants.MenuTimeTable),
+                InlineKeyboardButton.WithCallbackData("Назад", PublicConstants.GoMenu),
                 InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
             });
 
@@ -106,7 +85,8 @@ public static class TimeTableCommands
             callbackQuery.Message.Chat.Id,
             callbackQuery.Message.MessageId,
             "Выберите дату:",
-            replyMarkup: markup);
+            replyMarkup: markup,
+            parseMode: ParseMode.MarkdownV2);
     }
 
     public static async Task MenuDayTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)

@@ -19,7 +19,6 @@ public class PublicConstants
     public const string AddDescriptionTimeTable = @"^TE(.)(.)(.{2})(.{2})(.{2})(.{2})(.{4})$";// deleteDescription_true\false_minute_hour_day_month_year
     public const string SaveTimeTable = @"^TF(.)(.{2})(.{2})(.{2})(.{2})(.{4})$";// true\false_minute_hour_day_month_year
     public const string MenuDayTimeTable = @"^TG(.{2})(.{2})(.{4})$"; // day_month_year
-    public const string MenuTimeTable = "TH";
     public const string DeleteDayTimeTable = @"^TI(.{2})(.{2})(.{4})$"; // day_month_year
     public const string ChooseTimeTimeTable = @"^TJ(.{2})(.{2})(.{4})$"; // day_month_year
     public const string EditTimeTimeTable = @"^TK(.)(\w*)$"; // idWirkTime
@@ -42,17 +41,6 @@ public class PublicConstants
 
     public static readonly InlineKeyboardButton[] EmptyInlineKeyboardButton = {
         InlineKeyboardButton.WithCallbackData("…______________________________________________________________________________________", "\0")};
-
-    public static readonly InlineKeyboardMarkup MenuMarkup = new(new[]
-    {
-        new InlineKeyboardButton[] {
-            ImageMenu,
-            InlineKeyboardButton.WithCallbackData("Расписание", MenuTimeTable) },
-        new InlineKeyboardButton[] {
-            SupportMenu,
-            SubscribeMenu },
-        EmptyInlineKeyboardButton,
-    });
 
     public static readonly InlineKeyboardButton[] WeekButtons = new InlineKeyboardButton[] {
         InlineKeyboardButton.WithCallbackData("Пн", "\0"),
