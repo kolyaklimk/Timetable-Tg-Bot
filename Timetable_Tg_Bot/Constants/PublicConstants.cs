@@ -39,8 +39,9 @@ public class PublicConstants
     #endregion
 
     #region Other
-    public const string dateFormat = "dd/MM/yyyy";
-    public const string timeFormat = "HH:mm";
+    public static readonly string[] Months = new[] { "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь" };
+    public const string DateFormat = "dd/MM/yyyy";
+    public const string TimeFormat = "HH:mm";
 
     public static readonly InlineKeyboardButton[] EmptyInlineKeyboardButton = {
         InlineKeyboardButton.WithCallbackData("…______________________________________________________________________________________", "\0")};

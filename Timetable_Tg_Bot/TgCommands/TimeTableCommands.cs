@@ -20,7 +20,7 @@ public static class TimeTableCommands
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
 
         var dayTimetable = await context.WorkTimes
             .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
@@ -239,8 +239,8 @@ public static class TimeTableCommands
 
         await context.WorkTimes.AddAsync(new Entities.WorkTime
         {
-            Date = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null),
-            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
+            Date = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null),
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.TimeFormat, null),
             IsBusy = "1" == isBusy,
             UserId = callbackQuery.From.Id,
             Description = userBuffer.Buffer3
@@ -263,7 +263,7 @@ public static class TimeTableCommands
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
 
         var dayTimetable = context.WorkTimes.Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate);
         context.WorkTimes.RemoveRange(dayTimetable);
@@ -283,7 +283,7 @@ public static class TimeTableCommands
         string month = match.Groups[2].Value;
         string year = match.Groups[3].Value;
 
-        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+        DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
 
         var times = await context.WorkTimes
             .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
@@ -409,7 +409,7 @@ public static class TimeTableCommands
         {
             UserId = callbackQuery.From.Id,
             IsBusy = isBusy == "1",
-            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.TimeFormat, null),
         });
         await context.SaveChangesAsync();
 
@@ -496,7 +496,7 @@ public static class TimeTableCommands
                 var text = new StringBuilder();
                 foreach (var item in template.Template)
                 {
-                    text.AppendLine($"{item.Start.ToString(PublicConstants.timeFormat)} - {item.IsBusy}");
+                    text.AppendLine($"{item.Start.ToString(PublicConstants.TimeFormat)} - {item.IsBusy}");
                 }
 
                 // Send message
@@ -519,7 +519,7 @@ public static class TimeTableCommands
 
             // Input template
             case '2':
-                DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.dateFormat, null);
+                DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
                 var dayDelete = context.WorkTimes.Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate);
                 context.WorkTimes.RemoveRange(dayDelete);
 
@@ -629,7 +629,7 @@ public static class TimeTableCommands
                 await botClient.EditMessageTextAsync(
                     callbackQuery.Message.Chat.Id,
                     callbackQuery.Message.MessageId,
-                    $"Вы выбрали: {workTime.Start.ToString(PublicConstants.timeFormat)} - {workTime.IsBusy}\nВыберите что-нибудь:",
+                    $"Вы выбрали: {workTime.Start.ToString(PublicConstants.TimeFormat)} - {workTime.IsBusy}\nВыберите что-нибудь:",
                     replyMarkup: new InlineKeyboardMarkup(rows));
                 return;
         }
@@ -649,7 +649,7 @@ public static class TimeTableCommands
 
         await context.WorkTimes.AddAsync(new WorkTime
         {
-            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.timeFormat, null),
+            Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.TimeFormat, null),
             IsBusy = "1" == isBusy,
             UserId = callbackQuery.From.Id,
             TimeTableTemplateId = long.Parse(idTemplate),

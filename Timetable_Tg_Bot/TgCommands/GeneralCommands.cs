@@ -79,16 +79,15 @@ public static class GeneralCommands
         { }
         else
         {
-            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.dateFormat, null);
+            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.DateFormat, null);
             int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
             int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
-            var monthName = currentDate.ToString("MMMM", new CultureInfo("ru-RU"));
 
             // Month and Name day of week
             var rows = new List<InlineKeyboardButton[]>
             {
                 new[] {
-                    InlineKeyboardButton.WithCallbackData($"{char.ToUpper(monthName[0])}{monthName[1..]} {currentDate.Year}", "\0")},
+                    InlineKeyboardButton.WithCallbackData($"{PublicConstants.Months[currentDate.Month-1]} {currentDate.Year}", "\0")},
                 PublicConstants.WeekButtons
             };
 
