@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Concurrent;
-using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
@@ -14,81 +12,6 @@ namespace TimetableTgBot.TgCommands;
 
 public static class TimeTableCommands
 {
-    private static ConcurrentDictionary<string, InlineKeyboardMarkup> SavedCalendars = new();
-
-    public static async Task ChooseDateTimeTable(CallbackQuery callbackQuery, ITelegramBotClient botClient)
-    {
-        Match match = Regex.Match(callbackQuery.Data, PublicConstants.ChooseMonthTimeTable);
-
-        string month = match.Groups[1].Value;
-        string year = match.Groups[2].Value;
-
-
-        if (SavedCalendars.TryGetValue($"{month}_{year}", out InlineKeyboardMarkup markup))
-        { }
-        else
-        {
-            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.dateFormat, null);
-            int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
-            int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
-            var monthName = currentDate.ToString("MMMM", new CultureInfo("ru-RU"));
-
-            // Month and Name day of week
-            var rows = new List<InlineKeyboardButton[]>
-            {
-                new[] {
-                    InlineKeyboardButton.WithCallbackData($"{char.ToUpper(monthName[0])}{monthName[1..]} {currentDate.Year}", "\0")},
-                PublicConstants.WeekButtons
-            };
-
-            // Calendar
-            int currentDay = 1;
-            while (currentDay <= daysInMonth)
-            {
-                var row = new InlineKeyboardButton[7];
-
-                for (int i = 0; i < 7; i++)
-                {
-                    if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
-                    {
-                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"TG{currentDay:00}{month}{year}");
-                        currentDay++;
-                    }
-                    else
-                    {
-                        row[i] = "\0";
-                    }
-                }
-                rows.Add(row);
-            }
-
-            // previous and next buttons
-            var previousMonth = currentDate.AddMonths(-1);
-            var nextMonth = currentDate.AddMonths(1);
-
-            rows.Add(new[] {
-                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",callbackData: $"TA{previousMonth.Month:00}{previousMonth.Year}") : "\0",
-                PublicConstants.EmptyInlineKeyboardButton[0],
-                currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"TA{nextMonth.Month:00}{nextMonth.Year}") : "\0",
-            });
-            rows.Add(new[] {
-                InlineKeyboardButton.WithCallbackData("Назад", PublicConstants.GoMenu),
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
-            });
-
-            markup = new InlineKeyboardMarkup(rows);
-            SavedCalendars.TryAdd($"{month}_{year}", markup);
-        }
-
-        // Send message
-        await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            "Выберите дату:",
-            replyMarkup: markup,
-            parseMode: ParseMode.MarkdownV2);
-    }
-
     public static async Task MenuDayTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery.Data, PublicConstants.MenuDayTimeTable);

@@ -12,18 +12,18 @@ public static class ImageCommands
         var MenuMarkup = new InlineKeyboardMarkup(new[]
         {
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("1", "IR01"),
-                InlineKeyboardButton.WithCallbackData("2", "IR02"),
-                InlineKeyboardButton.WithCallbackData("3", "IR03"),
-                InlineKeyboardButton.WithCallbackData("4", "IR04"),
-                InlineKeyboardButton.WithCallbackData("5", "IR05"),
-                InlineKeyboardButton.WithCallbackData("6", "IR06"),
-                InlineKeyboardButton.WithCallbackData("7", "IR07")
+                InlineKeyboardButton.WithCallbackData("1", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}01"),
+                InlineKeyboardButton.WithCallbackData("2", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}02"),
+                InlineKeyboardButton.WithCallbackData("3", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}03"),
+                InlineKeyboardButton.WithCallbackData("4", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}04"),
+                InlineKeyboardButton.WithCallbackData("5", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}05"),
+                InlineKeyboardButton.WithCallbackData("6", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}06"),
+                InlineKeyboardButton.WithCallbackData("7", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}07")
             },
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("2 недели", "IR14"),
-                InlineKeyboardButton.WithCallbackData("3 недели", "IR21"),
-                InlineKeyboardButton.WithCallbackData("4 недели", "IR28")
+                InlineKeyboardButton.WithCallbackData("2 недели", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}14"),
+                InlineKeyboardButton.WithCallbackData("3 недели", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}21"),
+                InlineKeyboardButton.WithCallbackData("4 недели", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}28")
             },
             new InlineKeyboardButton[] {
                 InlineKeyboardButton.WithCallbackData("Определённый месяц", $"IC{callbackQuery.Message.Date.Year}")

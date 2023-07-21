@@ -11,8 +11,11 @@ public class PublicConstants
     public const string GoMenu = "MM";
     #endregion
 
+    #region General
+    public const string ChooseDay = @"^(.{2})(.{2})(.{4})(\w*)$"; // (TA)_month_year_otherInfo
+    #endregion
+
     #region TimeTable
-    public const string ChooseMonthTimeTable = @"^TA(.{2})(.{4})$"; // month_year
     public const string ChooseHourTimeTable = @"^T(.)(.{2})(.{2})(.{4})(\w*)$"; // (B_M_U)_day_month_year_otherInfo
     public const string ChooseMinuteTimeTable = @"^T(.)(.{2})(.{2})(.{2})(.{4})(\w*)$"; // (C_N_V)_hour_day_month_year_otherInfo
     public const string ChooseIsBusyTimeTable = @"^T(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$"; // (D_O_W)_minute_hour_day_month_year_otherInfo
@@ -30,14 +33,9 @@ public class PublicConstants
     public const string SaveNewTimeTemplateTimeTable = @"^TX(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$"; // true\false_minute_hour_day_month_year_IdWorkTime
     #endregion
 
-    #region TimeTable
+    #region Image
     public const string RangeDaysImage = "IR(.{2})"; // numberOfDays
     public const string ChooseMonthImage = "IC(.{4})"; // year
-    #endregion
-
-    #region Dates
-    public const string Month = "Месяц";
-    public const string Week = "Неделя";
     #endregion
 
     #region Other

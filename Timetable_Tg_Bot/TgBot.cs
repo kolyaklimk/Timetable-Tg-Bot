@@ -119,7 +119,7 @@ public class TgBot
                         {
                             // Choose Date
                             case 'A':
-                                await TimeTableCommands.ChooseDateTimeTable(callbackQuery, botClient);
+                                await GeneralCommands.ChooseDay("TG", null, callbackQuery, botClient);
                                 return;
 
                             // Menu Day
@@ -245,6 +245,11 @@ public class TgBot
                             // Image menu
                             case 'M':
                                 await ImageCommands.ImageMenu(callbackQuery, botClient);
+                                return;
+
+                            // Choose day 
+                            case 'A':
+                                await GeneralCommands.ChooseDay("IG", "IM", callbackQuery, botClient);
                                 return;
                         }
                         return;
