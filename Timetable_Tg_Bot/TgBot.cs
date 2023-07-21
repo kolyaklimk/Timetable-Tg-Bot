@@ -239,6 +239,15 @@ public class TgBot
                         }
                         return;
 
+                    case 'I':
+                        switch (callbackQuery.Data[1])
+                        {
+                            // Image menu
+                            case 'M':
+                                await ImageCommands.ImageMenu(callbackQuery, botClient);
+                                return;
+                        }
+                        return;
                     // Answer other null callback
                     default:
                         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);

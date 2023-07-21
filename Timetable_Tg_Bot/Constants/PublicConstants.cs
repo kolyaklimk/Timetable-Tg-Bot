@@ -5,7 +5,7 @@ namespace TimetableTgBot.Constants;
 public class PublicConstants
 {
     #region Menu
-    public const string ImageMenu = "Изображение";
+    public const string ImageMenu = "IM";
     public const string SupportMenu = "Поддержка";
     public const string SubscribeMenu = "Подписка";
     public const string GoMenu = "MM";
@@ -28,6 +28,11 @@ public class PublicConstants
     public const string EditTemplateTimeTable = @"^TS(.{2})(.{2})(.{4})(\w*)$"; // day_month_year_IdTemplate
     public const string EditTimeTemplateTimeTable = @"^TT(.)(.{2})(.{2})(.{4})(\w*)$"; // property_day_month_year_IdWorkTime
     public const string SaveNewTimeTemplateTimeTable = @"^TX(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$"; // true\false_minute_hour_day_month_year_IdWorkTime
+    #endregion
+
+    #region TimeTable
+    public const string RangeDaysImage = "IR(.{2})"; // numberOfDays
+    public const string ChooseMonthImage = "IC(.{4})"; // year
     #endregion
 
     #region Dates
