@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Globalization;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -11,8 +9,6 @@ namespace TimetableTgBot.TgCommands;
 
 public static class GeneralCommands
 {
-    private static ConcurrentDictionary<string, InlineKeyboardMarkup> SavedCalendars = new();
-
     public static async Task DeleteMessage(ITelegramBotClient botClient, Message message, bool previous = false)
     {
         if (previous)
@@ -74,67 +70,58 @@ public static class GeneralCommands
         string year = match.Groups[3].Value;
         string otherInfo = match.Groups[4].Value;
 
+        DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.DateFormat, null);
+        int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+        int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
 
-        if (SavedCalendars.TryGetValue($"{month}_{year}", out InlineKeyboardMarkup markup))
-        { }
-        else
-        {
-            DateOnly currentDate = DateOnly.ParseExact($"01/{month}/{year}", PublicConstants.DateFormat, null);
-            int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
-            int firstDayOfMonth = ((int)currentDate.DayOfWeek + 6) % 7;
-
-            // Month and Name day of week
-            var rows = new List<InlineKeyboardButton[]>
+        // Month and Name day of week
+        var rows = new List<InlineKeyboardButton[]>
             {
                 new[] {
                     InlineKeyboardButton.WithCallbackData($"{PublicConstants.Months[currentDate.Month-1]} {currentDate.Year}", "\0")},
                 PublicConstants.WeekButtons
             };
 
-            // Calendar
-            int currentDay = 1;
-            while (currentDay <= daysInMonth)
-            {
-                var row = new InlineKeyboardButton[7];
+        // Calendar
+        int currentDay = 1;
+        while (currentDay <= daysInMonth)
+        {
+            var row = new InlineKeyboardButton[7];
 
-                for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 7; i++)
+            {
+                if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
                 {
-                    if (currentDay <= daysInMonth && (i >= firstDayOfMonth || rows.Count > 2))
-                    {
-                        row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"{next}{currentDay:00}{month}{year}{otherInfo}");
-                        currentDay++;
-                    }
-                    else
-                    {
-                        row[i] = "\0";
-                    }
+                    row[i] = InlineKeyboardButton.WithCallbackData(currentDay.ToString(), $"{next}{currentDay:00}{month}{year}{otherInfo}");
+                    currentDay++;
                 }
-                rows.Add(row);
+                else
+                {
+                    row[i] = "\0";
+                }
             }
+            rows.Add(row);
+        }
 
-            // previous and next buttons
-            var previousMonth = currentDate.AddMonths(-1);
-            var nextMonth = currentDate.AddMonths(1);
+        // previous and next buttons
+        var previousMonth = currentDate.AddMonths(-1);
+        var nextMonth = currentDate.AddMonths(1);
 
+        rows.Add(new[] {
+            currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",$"{property}{previousMonth.Month:00}{previousMonth.Year}{otherInfo}") : "\0",
+            PublicConstants.EmptyInlineKeyboardButton[0],
+            currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"{property}{nextMonth.Month:00}{nextMonth.Year}{otherInfo}") : "\0",
+        });
+        if (previous == null)
+        {
+            rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu), });
+        }
+        else
+        {
             rows.Add(new[] {
-                currentDate.Year >=  callbackQuery.Message.Date.AddYears(-1).Year ? InlineKeyboardButton.WithCallbackData("<<",callbackData: $"{property}{previousMonth.Month:00}{previousMonth.Year}{otherInfo}") : "\0",
-                PublicConstants.EmptyInlineKeyboardButton[0],
-                currentDate.Year <= callbackQuery.Message.Date.AddYears(1).Year ? InlineKeyboardButton.WithCallbackData(">>",$"{property}{nextMonth.Month:00}{nextMonth.Year}{otherInfo}") : "\0",
-            });
-            if (previous == null)
-            {
-                rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu), });
-            }
-            else
-            {
-                rows.Add(new[] {
-                    InlineKeyboardButton.WithCallbackData("Назад", $"{previous}{otherInfo}"),
+                    InlineKeyboardButton.WithCallbackData("Назад", $"{previous}"),
                     InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
                 });
-            }
-
-            markup = new InlineKeyboardMarkup(rows);
-            SavedCalendars.TryAdd($"{month}_{year}", markup);
         }
 
         // Send message
@@ -142,7 +129,7 @@ public static class GeneralCommands
             callbackQuery.Message.Chat.Id,
             callbackQuery.Message.MessageId,
             "Выберите дату:",
-            replyMarkup: markup,
+            replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: ParseMode.MarkdownV2);
     }
 }
