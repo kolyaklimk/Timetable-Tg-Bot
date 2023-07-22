@@ -251,6 +251,12 @@ public class TgBot
                             case 'A':
                                 await GeneralCommands.ChooseDay("IG", "IM", callbackQuery, botClient);
                                 return;
+
+                            // Choose Month 
+                            case 'C':
+                                await ImageCommands.ChooseMonth(callbackQuery, botClient);
+                                return;
+
                         }
                         return;
                     // Answer other null callback
