@@ -247,16 +247,16 @@ public class TgBot
                                 await ImageCommands.ImageMenu(callbackQuery, botClient);
                                 return;
 
-                            // Choose day 
+                            // Choose first day 
                             case 'A':
-                                await GeneralCommands.ChooseDay("IG", "IM", callbackQuery, botClient);
+                                await GeneralCommands.ChooseDay("IB", "IM", callbackQuery, botClient);
                                 return;
 
-                            // Choose Month 
-                            case 'C':
-                                await ImageCommands.ChooseMonth(callbackQuery, botClient);
+                            // Choose second day 
+                            case 'B':
+                                callbackQuery.Data = $"IB{callbackQuery.Data[4..]}{callbackQuery.Data[2..]}";
+                                await GeneralCommands.ChooseDay("IR", $"IA{callbackQuery.Data[2..8]}", callbackQuery, botClient);
                                 return;
-
                         }
                         return;
                     // Answer other null callback

@@ -34,9 +34,7 @@ public class PublicConstants
     #endregion
 
     #region Image
-    public const string RangeDaysImage = @"^IR(.{2})$"; // numberOfDays
-    public const string ChooseMonthImage = @"^IC(.{4})$"; // year
-    public const string ChooseTemplateImage = @"^IG(.{2})(.{2})(.{4})(\w*)$"; // day_month_year_property
+    public const string RangeOfDayImage = @"^IR(.{2})(.{2})(.{4})(.{2})(.{2})(.{4})$"; // day_month_year_day_month_year
     #endregion
 
     #region Other
