@@ -254,8 +254,16 @@ public class TgBot
 
                             // Choose second day 
                             case 'B':
-                                callbackQuery.Data = $"IB{callbackQuery.Data[4..]}{callbackQuery.Data[2..]}";
-                                await GeneralCommands.ChooseDay("IR", $"IA{callbackQuery.Data[2..8]}", callbackQuery, botClient);
+                                if (callbackQuery.Data.Length < 11)
+                                {
+                                    callbackQuery.Data = $"IB{callbackQuery.Data[4..]}{callbackQuery.Data[2..]}";
+                                }
+                                await GeneralCommands.ChooseDay("IR1", $"IA{callbackQuery.Data[2..8]}", callbackQuery, botClient);
+                                return;
+
+                            // Range of days
+                            case 'R':
+                                await ImageCommands.RangeOfDaysImage(context, callbackQuery, botClient);
                                 return;
                         }
                         return;
