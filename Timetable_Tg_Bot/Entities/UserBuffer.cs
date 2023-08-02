@@ -8,5 +8,5 @@ public class UserBuffer
     public string? Buffer1 { get; set; }
     public int? Buffer2 { get; set; }
     public string? Buffer3 { get; set; }
-    public List<DateOnly> ImageDays { get; set; } = new();
+    public List<DateOnly> ImageDays { get; set; } = new(); // 1 - first day; 2 - last day; Next - deleted days
 }
