@@ -76,11 +76,10 @@ public static class GeneralCommands
 
         // Month and Name day of week
         var rows = new List<InlineKeyboardButton[]>
-            {
-                new[] {
-                    InlineKeyboardButton.WithCallbackData($"{PublicConstants.Months[currentDate.Month-1]} {currentDate.Year}", "\0")},
-                PublicConstants.WeekButtons
-            };
+        {
+            new[] { InlineKeyboardButton.WithCallbackData($"{PublicConstants.Months[currentDate.Month]} {currentDate.Year}", "\0") },
+            PublicConstants.WeekButtons
+        };
 
         // Calendar
         int currentDay = 1;
