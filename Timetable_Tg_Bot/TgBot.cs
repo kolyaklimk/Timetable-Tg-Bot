@@ -265,6 +265,11 @@ public class TgBot
                             case 'R':
                                 await ImageCommands.RangeOfDaysImage(context, callbackQuery, botClient);
                                 return;
+
+                            // Choose theme
+                            case 'C':
+                                await ImageCommands.ChooseThemeImage(context, callbackQuery, botClient);
+                                return;
                         }
                         return;
                     // Answer other null callback

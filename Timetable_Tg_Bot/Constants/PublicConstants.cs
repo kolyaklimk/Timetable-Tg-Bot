@@ -12,7 +12,7 @@ public class PublicConstants
     #endregion
 
     #region General
-    public const string ChooseDay = @"^(.{2})(.{2})(.{4})(\w*)$"; // (TA_IA_IU)_month_year_otherInfo
+    public const string ChooseDay = @"^(.{2})(.{2})(.{4})(\w*)$"; // (TA_IA_IB)_month_year_otherInfo
     #endregion
 
     #region TimeTable
@@ -35,6 +35,9 @@ public class PublicConstants
 
     #region Image
     public const string RangeOfDaysImage = @"^IR(.)(.{2})(.{2})(.{4})(.{0,2})(.{0,2})(.{0,4})$"; // property_day_month_year_day_month_year
+    public const string ChooseThemeImage = @"^IC$";
+
+    public const int CountThemeImage = 1;
     #endregion
 
     #region Other

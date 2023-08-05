@@ -129,4 +129,9 @@ public static class ImageCommands
             "Выбрать откуда начинать:",
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
+
+    public static async Task ChooseThemeImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        var userBuffer = await context.UserBuffers.FirstOrDefaultAsync(arg => arg.UserId == callbackQuery.From.Id);
+    }
 }
