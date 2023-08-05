@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -37,7 +36,7 @@ public static class ImageCommands
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.RangeOfDaysImage);
         char property = match.Groups[1].Value[0];
 
-        var userBuffer = await context.UserBuffers.FirstOrDefaultAsync(arg => arg.UserId == callbackQuery.From.Id);
+        var ImageDays = await context.GetUserImageAsync(callbackQuery.From);
         switch (property)
         {
             // Save to Buffer
@@ -51,39 +50,42 @@ public static class ImageCommands
                     return;
                 }
 
-                userBuffer.ImageDays = new()
+                ImageDays = new()
                 {
                     date1 < date2 ? date1 : date2,
                     date1 > date2 ? date1 : date2
                 };
+                context.UpdateUserImageAsync(callbackQuery.From, ImageDays);
                 break;
 
             // Add deleted date
             case '2':
-                userBuffer.ImageDays.Add(DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}"));
+                ImageDays.Add(DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}"));
+                context.UpdateUserImageAsync(callbackQuery.From, ImageDays);
                 break;
 
             // Remove deleted date
             case '3':
-                var index = userBuffer.ImageDays.FindLastIndex(arg => arg == DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}"));
-                userBuffer.ImageDays.RemoveAt(index);
+                var index = ImageDays.FindLastIndex(arg => arg == DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}"));
+                ImageDays.RemoveAt(index);
+                context.UpdateUserImageAsync(callbackQuery.From, ImageDays);
                 break;
         }
         await context.SaveChangesAsync();
 
         var rows = new List<InlineKeyboardButton[]> { PublicConstants.WeekButtons };
-        var dayCount = userBuffer.ImageDays[1].DayNumber - userBuffer.ImageDays[0].DayNumber;
+        var dayCount = ImageDays[1].DayNumber - ImageDays[0].DayNumber;
 
         HashSet<DateOnly> deletedDays = new();
-        for (var i = 2; i < userBuffer.ImageDays.Count; i++)
-            deletedDays.Add(userBuffer.ImageDays[i]);
+        for (var i = 2; i < ImageDays.Count; i++)
+            deletedDays.Add(ImageDays[i]);
 
         // Days
-        var currentDay = userBuffer.ImageDays[0];
+        var currentDay = ImageDays[0];
         var currentMonth = currentDay.Month - 1;
         int firstDayOfMonth = 0;
         int rowCount = 0;
-        while (currentDay <= userBuffer.ImageDays[1])
+        while (currentDay <= ImageDays[1])
         {
             if (currentDay.Month != currentMonth)
             {
@@ -96,7 +98,7 @@ public static class ImageCommands
             var row = new InlineKeyboardButton[7];
             for (int i = 0; i < 7; i++)
             {
-                if (currentDay <= userBuffer.ImageDays[1] && (i >= firstDayOfMonth || rows.Count > rowCount) && currentDay.Month == currentMonth)
+                if (currentDay <= ImageDays[1] && (i >= firstDayOfMonth || rows.Count > rowCount) && currentDay.Month == currentMonth)
                 {
                     if (!deletedDays.Contains(currentDay))
                     {
@@ -119,7 +121,7 @@ public static class ImageCommands
         rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", $"IH") });
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"IB{userBuffer.ImageDays[1].Month:00}{userBuffer.ImageDays[1].Year}{userBuffer.ImageDays[0].Day:00}{userBuffer.ImageDays[0].Month:00}{userBuffer.ImageDays[0].Year}"),
+            InlineKeyboardButton.WithCallbackData("Назад", $"IB{ImageDays[1].Month:00}{ImageDays[1].Year}{ImageDays[0].Day:00}{ImageDays[0].Month:00}{ImageDays[0].Year}"),
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         });
 
@@ -132,6 +134,5 @@ public static class ImageCommands
 
     public static async Task ChooseThemeImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
-        var userBuffer = await context.UserBuffers.FirstOrDefaultAsync(arg => arg.UserId == callbackQuery.From.Id);
     }
 }

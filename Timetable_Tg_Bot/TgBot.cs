@@ -4,6 +4,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TimetableTgBot.Constants;
+using TimetableTgBot.Entities;
 using TimetableTgBot.TgCommands;
 
 namespace TimetableTgBot;
@@ -35,44 +36,42 @@ public class TgBot
             var callbackQuery = update.CallbackQuery;
 
             using var context = new BotDbContext();
-            var userState = await context.GetUserStateAsync(message != null ? message.From : callbackQuery.From);
+            var waitingForText = await context.GetUserStateAsync(message != null ? message.From : callbackQuery.From);
+
+            //Console.WriteLine(context.ChangeTracker.Entries().Count()); // проверка кол-во отслеживающих объектов
 
             if (update.Type == UpdateType.Message)
             {
-
                 // start
                 if (message.Text == "/start")
                 {
-                    var user = await context.GetUserAsync(message.From);
-
-                    if (user == null)
+                    if (!await context.UserExistsAsync(message.From))
                     {
                         await context.RegisterUserAsync(message);
                     }
                     else
                     {
-                        context.UpdateUserStateAsync(userState, false);
-                        await context.SetNullUserBuffer3(message.From);
+                        context.UpdateUserStateAsync(message.From, false);
+                        context.UpdateUserBuffer3(message.From, string.Empty);
                     }
+                    await context.SaveChangesAsync();
 
                     await GeneralCommands.DeleteMessage(botClient, message, true);
                     await GeneralCommands.CreateMenu(false, botClient, message);
-
-                    await context.SaveChangesAsync();
                     return;
                 }
 
                 // Check WaitingForText
-                if (userState.WaitingForText)
+                if (waitingForText)
                 {
-                    var userBuffer = await context.GetUserBufferAsync(message.From);
+                    var userBuffer = await context.GetUserBuffersAsync(message.From, arg => new UserBuffer { Buffer1 = arg.Buffer1, Buffer2 = arg.Buffer2 });
                     await GeneralCommands.DeleteMessage(botClient, message);
 
                     switch (userBuffer.Buffer1[1])
                     {
                         // Description in create
                         case 'E':
-                            userBuffer.Buffer3 = message.Text;
+                            context.UpdateUserBuffer3(message.From, message.Text);
                             await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
                             break;
 
@@ -80,14 +79,16 @@ public class TgBot
                         case 'K':
                             if (userBuffer.Buffer1[2] == 'D')
                             {
-                                context.UpdateUserStateAsync(userState, false);
+                                context.UpdateUserStateAsync(message.From, false);
+                                break;
                             }
                             else
                             {
-                                userBuffer.Buffer1 = $"TK0{userBuffer.Buffer1[3..]}";
-                                await TimeTableCommands.EditTimeTimeTable(message.Text, userBuffer.Buffer1, context, botClient, message.Chat, (int)userBuffer.Buffer2);
+                                var newBuf = $"TK0{userBuffer.Buffer1[3..]}";
+                                context.UpdateUserBuffer1(message.From, newBuf);
+                                await TimeTableCommands.EditTimeTimeTable(message.Text, newBuf, context, botClient, message.Chat, (int)userBuffer.Buffer2);
                             }
-                            break;
+                            return;
                     }
                     await context.SaveChangesAsync();
                     return;
@@ -98,11 +99,11 @@ public class TgBot
             {
                 Console.WriteLine(callbackQuery.Data);
                 // Check WaitingForText
-                if (userState.WaitingForText)
+                if (waitingForText)
                 {
-                    context.UpdateUserStateAsync(userState, false);
+                    context.UpdateUserStateAsync(callbackQuery.From, false);
                     if (callbackQuery?.Data[1] != 'F')
-                        await context.SetNullUserBuffer3(callbackQuery.From);
+                        context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
                     await context.SaveChangesAsync();
                 }
 
@@ -144,11 +145,15 @@ public class TgBot
 
                             // Add description
                             case 'E':
-                                var userBuffer = await context.GetUserBufferAsync(callbackQuery.From);
-                                context.UpdateUserStateAsync(userState, true);
-                                await context.UpdateUserBuffer_1_2_Async(callbackQuery);
+                                var userBuffer = await context.GetUserBuffersAsync(callbackQuery.From, arg => new UserBuffer { Buffer3 = arg.Buffer3 });
+                                context.UpdateUserStateAsync(callbackQuery.From, true);
+                                context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
+                                context.UpdateUserBuffer2(callbackQuery.From, callbackQuery.Message.MessageId);
                                 if (callbackQuery?.Data[2] == 'Y')
+                                {
+                                    context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
                                     userBuffer.Buffer3 = null;
+                                }
 
                                 await TimeTableCommands.AddDescriptionTimeTable(userBuffer.Buffer3, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
                                 await context.SaveChangesAsync();
@@ -171,8 +176,9 @@ public class TgBot
 
                             // Edit time
                             case 'K':
-                                context.UpdateUserStateAsync(userState, true);
-                                await context.UpdateUserBuffer_1_2_Async(callbackQuery);
+                                context.UpdateUserStateAsync(callbackQuery.From, true);
+                                context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
+                                context.UpdateUserBuffer2(callbackQuery.From, callbackQuery.Message.MessageId);
 
                                 await TimeTableCommands.EditTimeTimeTable(null, callbackQuery?.Data, context, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId, callbackQuery);
                                 return;

@@ -23,6 +23,7 @@ public static class TimeTableCommands
         DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
 
         var dayTimetable = await context.WorkTimes
+            .AsNoTracking()
             .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
             .OrderBy(arg => arg.Start)
             .ToListAsync();
@@ -194,7 +195,7 @@ public static class TimeTableCommands
 
         var rows = new InlineKeyboardButton[][]
         {
-            description == null
+            string.IsNullOrEmpty(description)
             ? new[]
             {
                 InlineKeyboardButton.WithCallbackData("Сохранить описания", $"TF{isBusy}{minute}{hour}{day}{month}{year}"),
@@ -235,9 +236,9 @@ public static class TimeTableCommands
         string month = match.Groups[5].Value;
         string year = match.Groups[6].Value;
 
-        var userBuffer = await context.GetUserBufferAsync(callbackQuery.From);
+        var userBuffer = await context.GetUserBuffersAsync(callbackQuery.From, arg => new UserBuffer { Buffer3 = arg.Buffer3 });
 
-        await context.WorkTimes.AddAsync(new Entities.WorkTime
+        await context.WorkTimes.AddAsync(new WorkTime
         {
             Date = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null),
             Start = TimeOnly.ParseExact($"{hour}:{minute}", PublicConstants.TimeFormat, null),
@@ -246,7 +247,7 @@ public static class TimeTableCommands
             Description = userBuffer.Buffer3
         });
 
-        userBuffer.Buffer3 = null;
+        context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
         await context.SaveChangesAsync();
 
         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись на {day}/{month}/{year} в {hour}:{minute} сохранена!", false);
@@ -286,6 +287,7 @@ public static class TimeTableCommands
         DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
 
         var times = await context.WorkTimes
+            .AsNoTracking()
             .Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate)
             .OrderBy(arg => arg.Start)
             .ToListAsync();
@@ -401,11 +403,11 @@ public static class TimeTableCommands
         string month = match.Groups[5].Value;
         string year = match.Groups[6].Value;
 
-        var template = await context.TimeTableTemplates.AddAsync(new Entities.TimeTableTemplate
+        var template = await context.TimeTableTemplates.AddAsync(new TimeTableTemplate
         {
             UserId = callbackQuery.From.Id,
         });
-        template.Entity.Template.Add(new Entities.WorkTime
+        template.Entity.Template.Add(new WorkTime
         {
             UserId = callbackQuery.From.Id,
             IsBusy = isBusy == "1",
@@ -426,20 +428,22 @@ public static class TimeTableCommands
         string year = match.Groups[3].Value;
 
         var templates = await context.Users
-            .Include(arg => arg.TimeTableTemplates)
-            .FirstOrDefaultAsync(arg => arg.Id == callbackQuery.From.Id);
+            .AsNoTracking()
+            .Where(arg => arg.Id == callbackQuery.From.Id)
+            .Select(arg => arg.TimeTableTemplates)
+            .FirstOrDefaultAsync();
 
         // Templates
         var rows = new List<InlineKeyboardButton[]>();
 
-        for (var i = 0; i < templates.TimeTableTemplates.Count;)
+        for (var i = 0; i < templates.Count;)
         {
-            var row = new InlineKeyboardButton[(templates.TimeTableTemplates.Count - i) >= 6 ? 6 : (templates.TimeTableTemplates.Count - i) % 6];
+            var row = new InlineKeyboardButton[(templates.Count - i) >= 6 ? 6 : (templates.Count - i) % 6];
             for (var j = 0; j < row.Length; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
                     $"{i + 1}",
-                    $"TR0{day}{month}{year}{templates.TimeTableTemplates.ElementAt(i).Id}");
+                    $"TR0{day}{month}{year}{templates.ElementAt(i).Id}");
                 i++;
             }
             rows.Add(row);
@@ -551,20 +555,22 @@ public static class TimeTableCommands
         string idTemplate = match.Groups[4].Value;
 
         var template = await context.TimeTableTemplates
-            .Include(arg => arg.Template)
-            .FirstOrDefaultAsync(arg => arg.Id == long.Parse(idTemplate));
+            .AsNoTracking()
+            .Where(arg => arg.Id == long.Parse(idTemplate))
+            .Select(arg => arg.Template)
+            .FirstOrDefaultAsync();
 
         // Times
         var rows = new List<InlineKeyboardButton[]>();
 
-        for (var i = 0; i < template.Template.Count;)
+        for (var i = 0; i < template.Count;)
         {
-            var row = new InlineKeyboardButton[(template.Template.Count - i) >= 4 ? 4 : (template.Template.Count - i) % 4];
+            var row = new InlineKeyboardButton[(template.Count - i) >= 4 ? 4 : (template.Count - i) % 4];
             for (var j = 0; j < row.Length; j++)
             {
                 row[j] = InlineKeyboardButton.WithCallbackData(
-                    $"{template.Template.ElementAt(i).Start.Hour}:{template.Template.ElementAt(i).Start.Minute:00}",
-                    $"TT0{day}{month}{year}{template.Template.ElementAt(i).Id}");
+                    $"{template.ElementAt(i).Start.Hour}:{template.ElementAt(i).Start.Minute:00}",
+                    $"TT0{day}{month}{year}{template.ElementAt(i).Id}");
                 i++;
             }
             rows.Add(row);

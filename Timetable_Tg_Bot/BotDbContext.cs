@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Linq.Expressions;
 using Telegram.Bot.Types;
 using TimetableTgBot.Constants;
 using TimetableTgBot.Entities;
 using User = TimetableTgBot.Entities.User;
 using UserTg = Telegram.Bot.Types.User;
 
-public class BotDbContext: DbContext
+public class BotDbContext : DbContext
 {
+    private EntityEntry<UserBuffer>? EntryBuffer { get; set; }
+    private UserBuffer? UpdateUserBuffer { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<WorkTime> WorkTimes { get; set; }
     public DbSet<UserBuffer> UserBuffers { get; set; }
@@ -17,42 +21,76 @@ public class BotDbContext: DbContext
         optionsBuilder.UseNpgsql(PrivateConstants.DB_TOKEN);
     }
 
-    public async Task<UserBuffer?> GetUserStateAsync(UserTg user)
+    public async Task<bool> UserExistsAsync(UserTg user)
     {
-        return await UserBuffers.FirstOrDefaultAsync(arg => arg.User.Id == user.Id);
+        return await Users.AsNoTracking().AnyAsync(arg => arg.Id == user.Id);
     }
 
-    public async Task<User?> GetUserAsync(UserTg user)
+    public async Task<bool> GetUserStateAsync(UserTg user)
     {
-        return await Users.FirstOrDefaultAsync(arg => arg.Id == user.Id);
+        return await UserBuffers
+            .AsNoTracking()
+            .Where(arg => arg.Id == user.Id)
+            .Select(arg => arg.WaitingForText)
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<UserBuffer?> GetUserBufferAsync(UserTg user)
+    public async Task<UserBuffer?> GetUserBuffersAsync(UserTg user, Expression<Func<UserBuffer, UserBuffer>> select)
     {
-        return await UserBuffers.FirstOrDefaultAsync(arg => arg.UserId == user.Id);
+        return await UserBuffers
+            .AsNoTracking()
+            .Where(arg => arg.Id == user.Id)
+            .Select(select)
+            .FirstOrDefaultAsync();
+    }
+    public async Task<List<DateOnly>?> GetUserImageAsync(UserTg user)
+    {
+        return await UserBuffers
+            .AsNoTracking()
+            .Where(arg => arg.Id == user.Id)
+            .Select(arg => arg.ImageDays)
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<TimeTableTemplate?> GetTimeTableTemplateAsync(UserTg user)
+    public void UpdateUserStateAsync(UserTg user, bool waitingForText)
     {
-        return await TimeTableTemplates.FirstOrDefaultAsync(arg => arg.UserId == user.Id);
+        if (EntryBuffer == null)
+            SetEntryBuffer(user);
+        UpdateUserBuffer.WaitingForText = waitingForText;
+        EntryBuffer.Property(x => x.WaitingForText).IsModified = true;
     }
 
-    public void UpdateUserStateAsync(UserBuffer userState, bool waitingForText)
+    public void UpdateUserImageAsync(UserTg user, List<DateOnly> dates)
     {
-        userState.WaitingForText = waitingForText;
+        if (EntryBuffer == null)
+            SetEntryBuffer(user);
+        UpdateUserBuffer.ImageDays = dates;
+        EntryBuffer.Property(x => x.ImageDays).IsModified = true;
     }
 
-    public async Task UpdateUserBuffer_1_2_Async(CallbackQuery callbackQuery)
+    public void UpdateUserBuffer1(UserTg user, string buf)
     {
-        var userBuffer = await GetUserBufferAsync(callbackQuery.From);
-        userBuffer.Buffer1 = callbackQuery.Data;
-        userBuffer.Buffer2 = callbackQuery.Message.MessageId;
+        if (EntryBuffer == null)
+            SetEntryBuffer(user);
+        UpdateUserBuffer.Buffer1 = buf;
+        EntryBuffer.Property(x => x.Buffer1).IsModified = true;
+
     }
 
-    public async Task SetNullUserBuffer3(UserTg user)
+    public void UpdateUserBuffer2(UserTg user, int buf)
     {
-        var userBuffer = await GetUserBufferAsync(user);
-        userBuffer.Buffer3 = null;
+        if (EntryBuffer == null)
+            SetEntryBuffer(user);
+        UpdateUserBuffer.Buffer2 = buf;
+        EntryBuffer.Property(x => x.Buffer2).IsModified = true;
+    }
+
+    public void UpdateUserBuffer3(UserTg user, string buf)
+    {
+        if (EntryBuffer == null)
+            SetEntryBuffer(user);
+        UpdateUserBuffer.Buffer3 = buf;
+        EntryBuffer.Property(x => x.Buffer3).IsModified = true;
     }
 
     public async Task RegisterUserAsync(Message message)
@@ -66,6 +104,13 @@ public class BotDbContext: DbContext
             Subscription = message.Date.AddDays(3)
         });
 
-        await UserBuffers.AddAsync(new UserBuffer { UserId = message.From.Id });
+        await UserBuffers.AddAsync(new UserBuffer { Id = message.From.Id });
+    }
+
+    private void SetEntryBuffer(UserTg user)
+    {
+        UpdateUserBuffer = new UserBuffer { Id = user.Id, };
+        UserBuffers.Attach(UpdateUserBuffer);
+        EntryBuffer = Entry(UpdateUserBuffer);
     }
 }
