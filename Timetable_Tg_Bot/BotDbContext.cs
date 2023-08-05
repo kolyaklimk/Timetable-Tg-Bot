@@ -9,7 +9,6 @@ public class BotDbContext: DbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<WorkTime> WorkTimes { get; set; }
-    public DbSet<UserState> UserStates { get; set; }
     public DbSet<UserBuffer> UserBuffers { get; set; }
     public DbSet<TimeTableTemplate> TimeTableTemplates { get; set; }
 
@@ -18,9 +17,9 @@ public class BotDbContext: DbContext
         optionsBuilder.UseNpgsql(PrivateConstants.DB_TOKEN);
     }
 
-    public async Task<UserState?> GetUserStateAsync(UserTg user)
+    public async Task<UserBuffer?> GetUserStateAsync(UserTg user)
     {
-        return await UserStates.FirstOrDefaultAsync(arg => arg.User.Id == user.Id);
+        return await UserBuffers.FirstOrDefaultAsync(arg => arg.User.Id == user.Id);
     }
 
     public async Task<User?> GetUserAsync(UserTg user)
@@ -38,7 +37,7 @@ public class BotDbContext: DbContext
         return await TimeTableTemplates.FirstOrDefaultAsync(arg => arg.UserId == user.Id);
     }
 
-    public void UpdateUserStateAsync(UserState userState, bool waitingForText)
+    public void UpdateUserStateAsync(UserBuffer userState, bool waitingForText)
     {
         userState.WaitingForText = waitingForText;
     }
@@ -67,7 +66,6 @@ public class BotDbContext: DbContext
             Subscription = message.Date.AddDays(3)
         });
 
-        await UserStates.AddAsync(new UserState { UserId = message.From.Id });
         await UserBuffers.AddAsync(new UserBuffer { UserId = message.From.Id });
     }
 }
