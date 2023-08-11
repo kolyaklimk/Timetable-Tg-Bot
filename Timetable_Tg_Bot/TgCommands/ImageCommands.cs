@@ -118,7 +118,7 @@ public static class ImageCommands
             rows.Add(row);
         }
 
-        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", $"IH") });
+        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", "IC0") });
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
             InlineKeyboardButton.WithCallbackData("Назад", $"IB{ImageDays[1].Month:00}{ImageDays[1].Year}{ImageDays[0].Day:00}{ImageDays[0].Month:00}{ImageDays[0].Year}"),
@@ -132,7 +132,42 @@ public static class ImageCommands
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
-    public static async Task ChooseThemeImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseTemplateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseTemplateImage);
+        char backround = match.Groups[1].Value[0];
+
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for (var i = 0; i < PublicConstants.CountTemplatesImage;)
+        {
+            var row = new InlineKeyboardButton[(PublicConstants.CountTemplatesImage - i) >= 5 ? 5 : (PublicConstants.CountTemplatesImage - i) % 5];
+            for (var j = 0; j < row.Length; j++)
+            {
+                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{backround}000");
+                i++;
+            }
+            rows.Add(row);
+        }
+
+        rows.Add(new InlineKeyboardButton[]
+        {
+            backround=='0'
+            ? InlineKeyboardButton.WithCallbackData("Фон - ❌", "IC1")
+            : InlineKeyboardButton.WithCallbackData("Фон - ✅", "IC0")
+        });
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+            InlineKeyboardButton.WithCallbackData("Назад", $"IR0"),
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+        });
+
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "Выберите шаблон картинки\n" +
+            $"[Нажми для лучшего качества]({PrivateConstants.TemplateImage})\n",
+            replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 }

@@ -34,13 +34,15 @@ public class PublicConstants
     #endregion
 
     #region Image
-    public const string RangeOfDaysImage = @"^IR(.)(.{2})(.{2})(.{4})(.{0,2})(.{0,2})(.{0,4})$"; // property_day_month_year_day_month_year
-    public const string ChooseThemeImage = @"^IC$";
+    public const string RangeOfDaysImage = @"^IR(.)(.{0,2})(.{0,2})(.{0,4})(.{0,2})(.{0,2})(.{0,4})$"; // property_day_month_year_day_month_year
+    public const string ChooseTemplateImage = @"^IC(.)$"; // background
+    public const string EditTemplateImage = @"^IH(.)(.)(.)(.)$"; // background_Color_font_fontColor
 
-    public const int CountThemeImage = 1;
+    public const int CountTemplatesImage = 1;
     #endregion
 
     #region Other
+    public const char Okey = '✅';
     public static readonly string[] Months = new[] { "", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь" };
     public static readonly string[] CrossLittleNumbers = new[]
     {
