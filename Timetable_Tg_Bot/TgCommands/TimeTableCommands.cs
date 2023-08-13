@@ -66,7 +66,7 @@ public static class TimeTableCommands
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
-    public static async Task ChooseHourTimeTable(char next, char previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseHourTimeTable(string next, string previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseHourTimeTable);
 
@@ -105,7 +105,7 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2);
     }
 
-    public static async Task ChooseMinuteTimeTable(char next, char previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseMinuteTimeTable(string next, string previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseMinuteTimeTable);
 
@@ -145,7 +145,7 @@ public static class TimeTableCommands
             parseMode: ParseMode.MarkdownV2);
     }
 
-    public static async Task ChooseIsBusyTimeTable(string next, char previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseIsBusyTimeTable(string next, string previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseIsBusyTimeTable);
 
@@ -326,13 +326,13 @@ public static class TimeTableCommands
     {
         Match match = Regex.Match(data, PublicConstants.EditTimeTimeTable);
 
-        char index = match.Groups[1].Value[0];
+        string index = match.Groups[1].Value;
         string idWorkTime = match.Groups[2].Value;
         var time = await context.WorkTimes.FirstOrDefaultAsync(arg => arg.Id == long.Parse(idWorkTime));
 
         switch (index)
         {
-            case 'D':
+            case "D":
                 context.WorkTimes.Remove(time);
                 await context.SaveChangesAsync();
                 await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Запись удалена!", false);
@@ -341,7 +341,7 @@ public static class TimeTableCommands
                 await MenuDayTimeTable(context, callbackQuery, botClient);
                 return;
 
-            case 'R':
+            case "R":
                 if (time.Description == null)
                 {
                     botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
@@ -350,7 +350,7 @@ public static class TimeTableCommands
                 time.Description = null;
                 goto default;
 
-            case '1':
+            case "1":
                 time.IsBusy = !time.IsBusy;
                 goto default;
 
@@ -468,7 +468,7 @@ public static class TimeTableCommands
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.TemplateTimeTable);
 
-        char property = match.Groups[1].Value[0];
+        string property = match.Groups[1].Value;
         string day = match.Groups[2].Value;
         string month = match.Groups[3].Value;
         string year = match.Groups[4].Value;
@@ -481,7 +481,7 @@ public static class TimeTableCommands
         switch (property)
         {
             // View
-            case '0':
+            case "0":
                 var rows = new InlineKeyboardButton[][] {
                     new[]{
                         InlineKeyboardButton.WithCallbackData("Удалить",$"TR1{day}{month}{year}{idTemplate}"),
@@ -512,7 +512,7 @@ public static class TimeTableCommands
                 return;
 
             // Delete
-            case '1':
+            case "1":
                 context.WorkTimes.RemoveRange(template.Template);
                 context.TimeTableTemplates.Remove(template);
                 await context.SaveChangesAsync();
@@ -522,7 +522,7 @@ public static class TimeTableCommands
                 return;
 
             // Input template
-            case '2':
+            case "2":
                 DateOnly currentDate = DateOnly.ParseExact($"{day}/{month}/{year}", PublicConstants.DateFormat, null);
                 var dayDelete = context.WorkTimes.Where(arg => arg.UserId == callbackQuery.From.Id && arg.Date == currentDate);
                 context.WorkTimes.RemoveRange(dayDelete);
@@ -595,7 +595,7 @@ public static class TimeTableCommands
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTimeTemplateTimeTable);
 
-        char property = match.Groups[1].Value[0];
+        string property = match.Groups[1].Value;
         string day = match.Groups[2].Value;
         string month = match.Groups[3].Value;
         string year = match.Groups[4].Value;
@@ -605,14 +605,14 @@ public static class TimeTableCommands
 
         switch (property)
         {
-            case '1':
+            case "1":
                 context.WorkTimes.Remove(workTime);
                 await context.SaveChangesAsync();
                 callbackQuery.Data = $"TS{day}{month}{year}{workTime.TimeTableTemplateId}";
                 await EditTemplateTimeTable(context, callbackQuery, botClient);
                 return;
 
-            case '2':
+            case "2":
                 workTime.IsBusy = !workTime.IsBusy;
                 await context.SaveChangesAsync();
                 goto default;

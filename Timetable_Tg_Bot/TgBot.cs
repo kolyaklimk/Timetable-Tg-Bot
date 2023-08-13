@@ -130,17 +130,17 @@ public class TgBot
 
                             // Choose hour
                             case 'B':
-                                await TimeTableCommands.ChooseHourTimeTable('C', 'G', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseHourTimeTable("C", "G", callbackQuery, botClient);
                                 return;
 
                             // Choose minute
                             case 'C':
-                                await TimeTableCommands.ChooseMinuteTimeTable('D', 'B', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseMinuteTimeTable("D", "B", callbackQuery, botClient);
                                 return;
 
                             // Choose is busy
                             case 'D':
-                                await TimeTableCommands.ChooseIsBusyTimeTable("EN", 'C', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseIsBusyTimeTable("EN", "C", callbackQuery, botClient);
                                 return;
 
                             // Add description
@@ -185,17 +185,17 @@ public class TgBot
 
                             // Create template -> Choose hour
                             case 'M':
-                                await TimeTableCommands.ChooseHourTimeTable('N', 'Q', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseHourTimeTable("N", "Q", callbackQuery, botClient);
                                 return;
 
                             // Create template -> Choose minute
                             case 'N':
-                                await TimeTableCommands.ChooseMinuteTimeTable('O', 'M', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseMinuteTimeTable("O", "M", callbackQuery, botClient);
                                 return;
 
                             // Create template -> Choose isBusy
                             case 'O':
-                                await TimeTableCommands.ChooseIsBusyTimeTable("P", 'N', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseIsBusyTimeTable("P", "N", callbackQuery, botClient);
                                 return;
 
                             // Create new template
@@ -225,17 +225,17 @@ public class TgBot
 
                             // Create new time in template -> Choose hour
                             case 'U':
-                                await TimeTableCommands.ChooseHourTimeTable('V', 'S', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseHourTimeTable("V", "S", callbackQuery, botClient);
                                 return;
 
                             // Create new time in template -> Choose minute
                             case 'V':
-                                await TimeTableCommands.ChooseMinuteTimeTable('W', 'U', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseMinuteTimeTable("W", "U", callbackQuery, botClient);
                                 return;
 
                             // Create new time in template -> Choose isBusy
                             case 'W':
-                                await TimeTableCommands.ChooseIsBusyTimeTable("X", 'V', callbackQuery, botClient);
+                                await TimeTableCommands.ChooseIsBusyTimeTable("X", "V", callbackQuery, botClient);
                                 return;
 
                             // Create new time in template -> Save new time
@@ -279,6 +279,7 @@ public class TgBot
 
                             // Edit template
                             case 'H':
+                                await ImageCommands.EditTemplateImage(context, callbackQuery, botClient);
                                 return;
                         }
                         return;

@@ -34,13 +34,13 @@ public static class ImageCommands
     public static async Task RangeOfDaysImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.RangeOfDaysImage);
-        char property = match.Groups[1].Value[0];
+        string property = match.Groups[1].Value;
 
         var ImageDays = await context.GetUserImageAsync(callbackQuery.From);
         switch (property)
         {
             // Save to Buffer
-            case '1':
+            case "1":
                 var date1 = DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}");
                 var date2 = DateOnly.Parse($"{match.Groups[5].Value}/{match.Groups[6].Value}/{match.Groups[7].Value}");
 
@@ -59,13 +59,13 @@ public static class ImageCommands
                 break;
 
             // Add deleted date
-            case '2':
+            case "2":
                 ImageDays.Add(DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}"));
                 context.UpdateUserImageAsync(callbackQuery.From, ImageDays);
                 break;
 
             // Remove deleted date
-            case '3':
+            case "3":
                 var index = ImageDays.FindLastIndex(arg => arg == DateOnly.Parse($"{match.Groups[2].Value}/{match.Groups[3].Value}/{match.Groups[4].Value}"));
                 ImageDays.RemoveAt(index);
                 context.UpdateUserImageAsync(callbackQuery.From, ImageDays);
@@ -135,7 +135,7 @@ public static class ImageCommands
     public static async Task ChooseTemplateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseTemplateImage);
-        char backround = match.Groups[1].Value[0];
+        string backround = match.Groups[1].Value;
 
         var rows = new List<InlineKeyboardButton[]>();
 
@@ -144,7 +144,7 @@ public static class ImageCommands
             var row = new InlineKeyboardButton[(PublicConstants.CountTemplatesImage - i) >= 5 ? 5 : (PublicConstants.CountTemplatesImage - i) % 5];
             for (var j = 0; j < row.Length; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{backround}000");
+                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{backround}00000");
                 i++;
             }
             rows.Add(row);
@@ -152,7 +152,7 @@ public static class ImageCommands
 
         rows.Add(new InlineKeyboardButton[]
         {
-            backround=='0'
+            backround=="0"
             ? InlineKeyboardButton.WithCallbackData("Фон - ❌", "IC1")
             : InlineKeyboardButton.WithCallbackData("Фон - ✅", "IC0")
         });
@@ -166,6 +166,76 @@ public static class ImageCommands
             callbackQuery.Message.Chat.Id,
             callbackQuery.Message.MessageId,
             "Выберите шаблон картинки\n" +
+            $"[Нажми для лучшего качества]({PrivateConstants.TemplateImage})\n",
+            replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+    }
+
+    public static async Task EditTemplateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateImage);
+        string backround = match.Groups[1].Value;
+        string backroundTheme = match.Groups[5].Value;
+        string position = match.Groups[6].Value;
+
+        var rows = new List<InlineKeyboardButton[]>();
+
+        for (int i = 0; i < 3; i++)
+        {
+            var buttons = new InlineKeyboardButton[4];
+            buttons[0] = InlineKeyboardButton.WithCallbackData(PublicConstants.EditNameSettingsImage[i], "\0");
+            for (int j = 0; j < 3; j++)
+            {
+                if (match.Groups[i + 2].Value == j.ToString())
+                    buttons[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
+                else
+                    buttons[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..(3 + i)]}{j}{match.Groups[0].Value[(4 + i)..]}");
+            }
+            rows.Add(buttons);
+        }
+
+        if (backround != "0")
+        {
+            var buttons1 = new InlineKeyboardButton[4];
+            buttons1[0] = InlineKeyboardButton.WithCallbackData("Фон", "\0");
+            for (int j = 0; j < 3; j++)
+            {
+                if (backroundTheme == j.ToString())
+                    buttons1[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
+                else
+                    buttons1[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..6]}{j}{match.Groups[0].Value[7..]}");
+            }
+            rows.Add(buttons1);
+
+            int c = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                var buttons2 = new InlineKeyboardButton[5];
+                buttons2[0] = InlineKeyboardButton.WithCallbackData("|", "\0");
+                for (int j = 0; j < 3; j++)
+                {
+                    if (position == c.ToString())
+                        buttons2[j + 1] = InlineKeyboardButton.WithCallbackData($"✅", "\0");
+                    else
+                        buttons2[j + 1] = InlineKeyboardButton.WithCallbackData("-", $"{match.Groups[0].Value[..7]}{c}");
+                    c++;
+                }
+                buttons2[4] = InlineKeyboardButton.WithCallbackData("|", "\0");
+                rows.Add(buttons2);
+            }
+        }
+
+        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", "\0") });
+        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
+        rows.Add(new[] {
+            InlineKeyboardButton.WithCallbackData("Назад", $"IC{backround}"),
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+        });
+
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "Настройка картинки\n" +
             $"[Нажми для лучшего качества]({PrivateConstants.TemplateImage})\n",
             replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
