@@ -36,7 +36,7 @@ public class TgBot
             var callbackQuery = update.CallbackQuery;
 
             using var context = new BotDbContext();
-            var waitingForText = await context.GetUserStateAsync(message != null ? message.From : callbackQuery.From);
+            var waitingFor = await context.GetUserStateAsync(message != null ? message.From : callbackQuery.From);
 
             //Console.WriteLine(context.ChangeTracker.Entries().Count()); // проверка кол-во отслеживающих объектов
 
@@ -51,20 +51,20 @@ public class TgBot
                     }
                     else
                     {
-                        context.UpdateUserStateAsync(message.From, false);
+                        context.UpdateUserStateTextAsync(message.From, false);
                         context.UpdateUserBuffer3(message.From, string.Empty);
                     }
                     await context.SaveChangesAsync();
 
                     await GeneralCommands.DeleteMessage(botClient, message, true);
-                    await GeneralCommands.CreateMenu(false, botClient, message);
+                    await GeneralCommands.CreateMenu(context, false, botClient, message);
                     return;
                 }
 
                 // Check WaitingForText
-                if (waitingForText)
+                if (waitingFor.WaitingForText)
                 {
-                    var userBuffer = await context.GetUserBuffersAsync(message.From, arg => new UserBuffer { Buffer1 = arg.Buffer1, Buffer2 = arg.Buffer2 });
+                    var userBuffer = await context.GetUserBuffersAsync(message.From, arg => new UserBuffer { Buffer1 = arg.Buffer1, MessageId = arg.MessageId });
                     await GeneralCommands.DeleteMessage(botClient, message);
 
                     switch (userBuffer.Buffer1[1])
@@ -72,21 +72,21 @@ public class TgBot
                         // Description in create
                         case 'E':
                             context.UpdateUserBuffer3(message.From, message.Text);
-                            await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.Buffer2);
+                            await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId);
                             break;
 
                         // Description in edit time
                         case 'K':
                             if (userBuffer.Buffer1[2] == 'D')
                             {
-                                context.UpdateUserStateAsync(message.From, false);
+                                context.UpdateUserStateTextAsync(message.From, false);
                                 break;
                             }
                             else
                             {
                                 var newBuf = $"TK0{userBuffer.Buffer1[3..]}";
                                 context.UpdateUserBuffer1(message.From, newBuf);
-                                await TimeTableCommands.EditTimeTimeTable(message.Text, newBuf, context, botClient, message.Chat, (int)userBuffer.Buffer2);
+                                await TimeTableCommands.EditTimeTimeTable(message.Text, newBuf, context, botClient, message.Chat, (int)userBuffer.MessageId);
                             }
                             return;
                     }
@@ -99,9 +99,9 @@ public class TgBot
             {
                 Console.WriteLine(callbackQuery.Data);
                 // Check WaitingForText
-                if (waitingForText)
+                if (waitingFor.WaitingForText)
                 {
-                    context.UpdateUserStateAsync(callbackQuery.From, false);
+                    context.UpdateUserStateTextAsync(callbackQuery.From, false);
                     if (callbackQuery?.Data[1] != 'F')
                         context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
                     await context.SaveChangesAsync();
@@ -111,7 +111,7 @@ public class TgBot
                 {
                     // Go main Menu
                     case 'M':
-                        await GeneralCommands.CreateMenu(true, botClient, callbackQuery.Message);
+                        await GeneralCommands.CreateMenu(context, true, botClient, callbackQuery.Message);
                         return;
 
                     // Timetable
@@ -146,9 +146,8 @@ public class TgBot
                             // Add description
                             case 'E':
                                 var userBuffer = await context.GetUserBuffersAsync(callbackQuery.From, arg => new UserBuffer { Buffer3 = arg.Buffer3 });
-                                context.UpdateUserStateAsync(callbackQuery.From, true);
+                                context.UpdateUserStateTextAsync(callbackQuery.From, true);
                                 context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
-                                context.UpdateUserBuffer2(callbackQuery.From, callbackQuery.Message.MessageId);
                                 if (callbackQuery?.Data[2] == 'Y')
                                 {
                                     context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
@@ -176,9 +175,8 @@ public class TgBot
 
                             // Edit time
                             case 'K':
-                                context.UpdateUserStateAsync(callbackQuery.From, true);
+                                context.UpdateUserStateTextAsync(callbackQuery.From, true);
                                 context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
-                                context.UpdateUserBuffer2(callbackQuery.From, callbackQuery.Message.MessageId);
 
                                 await TimeTableCommands.EditTimeTimeTable(null, callbackQuery?.Data, context, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId, callbackQuery);
                                 return;
@@ -280,6 +278,19 @@ public class TgBot
                             // Edit template
                             case 'H':
                                 await ImageCommands.EditTemplateImage(context, callbackQuery, botClient);
+                                return;
+
+                            // Load User Image
+                            case 'L':
+                                context.UpdateUserStateDocumentAsync(callbackQuery.From, true);
+                                context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
+
+                                await ImageCommands.LoadUserImage(context, callbackQuery, botClient);
+                                return;
+
+                            // Create Image
+                            case 'P':
+                                await ImageCommands.CreateImage(context, callbackQuery, botClient);
                                 return;
                         }
                         return;

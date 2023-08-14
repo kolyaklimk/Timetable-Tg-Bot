@@ -224,8 +224,15 @@ public static class ImageCommands
                 rows.Add(buttons2);
             }
         }
+        if (backroundTheme == "2")
+        {
+            rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", $"IL{match.Groups[0].Value[2..]}") });
+        }
+        else
+        {
+            rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", $"IP{match.Groups[0].Value[2..]}") });
+        }
 
-        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Продолжить", "\0") });
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
             InlineKeyboardButton.WithCallbackData("Назад", $"IC{backround}"),
@@ -239,5 +246,58 @@ public static class ImageCommands
             $"[Нажми для лучшего качества]({PrivateConstants.TemplateImage})\n",
             replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+    }
+
+    public static async Task LoadUserImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        var rows = new List<InlineKeyboardButton[]>
+        {
+            new[] { InlineKeyboardButton.WithCallbackData("Продолжить", "\0") },
+            PublicConstants.EmptyInlineKeyboardButton,
+            new[] {
+            InlineKeyboardButton.WithCallbackData("Назад", $"IH{callbackQuery.Data[2..]}"),
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+        }
+        };
+
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            "Отправь изображение *ДОКУМЕНТОМ*\n",
+            replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+    }
+
+    public static async Task CreateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    {
+        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateImage);
+        string backround = match.Groups[2].Value;
+        string font = match.Groups[3].Value;
+        string fontColor = match.Groups[4].Value;
+        string сolor = match.Groups[5].Value;
+        string backroundTheme = match.Groups[6].Value;
+        string position = match.Groups[7].Value;
+
+        if (backround == "0")
+        {
+            // Create only timetable
+        }
+        else
+        {
+            switch (backroundTheme)
+            {
+                // User Image
+                case "0":
+                    break;
+
+                // Random Image
+                case "1":
+                    break;
+
+                // Gradient
+                case "2":
+                    break;
+            }
+        }
     }
 }

@@ -31,7 +31,7 @@ public static class GeneralCommands
         }
     }
 
-    public static async Task CreateMenu(bool edit, ITelegramBotClient botClient, Message message)
+    public static async Task CreateMenu(BotDbContext context, bool edit, ITelegramBotClient botClient, Message message)
     {
         var MenuMarkup = new InlineKeyboardMarkup(new[]
         {
@@ -54,10 +54,13 @@ public static class GeneralCommands
         }
         else
         {
-            await botClient.SendTextMessageAsync(
+            var messageId = (await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Меню:",
-                replyMarkup: MenuMarkup);
+                replyMarkup: MenuMarkup)).MessageId;
+
+            context.UpdateUserBufferMessageId(message.From, messageId);
+            await context.SaveChangesAsync();
         }
     }
 
