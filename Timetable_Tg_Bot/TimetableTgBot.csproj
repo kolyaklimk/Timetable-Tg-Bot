@@ -8,6 +8,20 @@
     <DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\BackgroudImages\0.jpg" />
+    <None Remove="Resources\BackgroudImages\1.jpg" />
+    <None Remove="Resources\BackgroudImages\2.jpg" />
+    <None Remove="Resources\BackgroudImages\3.jpg" />
+    <None Remove="Resources\BackgroudImages\4.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\BackgroudImages\0.jpg" />
+    <Content Include="Resources\BackgroudImages\1.jpg" />
+    <Content Include="Resources\BackgroudImages\2.jpg" />
+    <Content Include="Resources\BackgroudImages\3.jpg" />
+    <Content Include="Resources\BackgroudImages\4.jpg" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Build.Containers" Version="7.0.306" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
