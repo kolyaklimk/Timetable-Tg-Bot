@@ -26,12 +26,12 @@ public class BotDbContext : DbContext
         return await Users.AsNoTracking().AnyAsync(arg => arg.Id == user.Id);
     }
 
-    public async Task<bool> GetUserStateAsync(UserTg user)
+    public async Task<UserBuffer?> GetUserStateAsync(UserTg user)
     {
         return await UserBuffers
             .AsNoTracking()
             .Where(arg => arg.Id == user.Id)
-            .Select(arg => arg.WaitingForText)
+            .Select(arg => new UserBuffer { WaitingForText = arg.WaitingForText, WaitingForDocument = arg.WaitingForDocument })
             .FirstOrDefaultAsync();
     }
 
@@ -52,12 +52,20 @@ public class BotDbContext : DbContext
             .FirstOrDefaultAsync();
     }
 
-    public void UpdateUserStateAsync(UserTg user, bool waitingForText)
+    public void UpdateUserStateTextAsync(UserTg user, bool waitingForText)
     {
         if (EntryBuffer == null)
             SetEntryBuffer(user);
         UpdateUserBuffer.WaitingForText = waitingForText;
         EntryBuffer.Property(x => x.WaitingForText).IsModified = true;
+    }
+
+    public void UpdateUserStateDocumentAsync(UserTg user, bool waitingForDocument)
+    {
+        if (EntryBuffer == null)
+            SetEntryBuffer(user);
+        UpdateUserBuffer.WaitingForDocument = waitingForDocument;
+        EntryBuffer.Property(x => x.WaitingForDocument).IsModified = true;
     }
 
     public void UpdateUserImageAsync(UserTg user, List<DateOnly> dates)
@@ -77,12 +85,12 @@ public class BotDbContext : DbContext
 
     }
 
-    public void UpdateUserBuffer2(UserTg user, int buf)
+    public void UpdateUserBufferMessageId(UserTg user, int buf)
     {
         if (EntryBuffer == null)
             SetEntryBuffer(user);
-        UpdateUserBuffer.Buffer2 = buf;
-        EntryBuffer.Property(x => x.Buffer2).IsModified = true;
+        UpdateUserBuffer.MessageId = buf;
+        EntryBuffer.Property(x => x.MessageId).IsModified = true;
     }
 
     public void UpdateUserBuffer3(UserTg user, string buf)
@@ -109,8 +117,16 @@ public class BotDbContext : DbContext
 
     private void SetEntryBuffer(UserTg user)
     {
-        UpdateUserBuffer = new UserBuffer { Id = user.Id, };
-        UserBuffers.Attach(UpdateUserBuffer);
+        var trackedEntity = Set<UserBuffer>().Local.FirstOrDefault(e => e.Id == user.Id);
+        if (trackedEntity == null)
+        {
+            UpdateUserBuffer = new UserBuffer { Id = user.Id, };
+        }
+        else
+        {
+            UpdateUserBuffer = trackedEntity;
+        }
         EntryBuffer = Entry(UpdateUserBuffer);
+        UserBuffers.Attach(UpdateUserBuffer);
     }
 }
