@@ -277,7 +277,7 @@ public class TgBot
 
                             // Edit template
                             case 'H':
-                                await ImageCommands.EditTemplateImage(context, callbackQuery, botClient);
+                                await ImageCommands.EditTemplateImage(callbackQuery, botClient);
                                 return;
 
                             // Load User Image
@@ -285,7 +285,7 @@ public class TgBot
                                 context.UpdateUserStateDocumentAsync(callbackQuery.From, true);
                                 context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
 
-                                await ImageCommands.LoadUserImage(context, callbackQuery, botClient);
+                                await ImageCommands.LoadUserImage(callbackQuery, botClient);
                                 return;
 
                             // Create Image

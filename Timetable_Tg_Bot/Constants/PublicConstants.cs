@@ -36,8 +36,8 @@ public class PublicConstants
     #region Image
     public const string RangeOfDaysImage = @"^IR(.)(.{0,2})(.{0,2})(.{0,4})(.{0,2})(.{0,2})(.{0,4})$"; // property_day_month_year_day_month_year
     public const string ChooseTemplateImage = @"^IC(.)$"; // background
-    public const string EditTemplateImage = @"^IH(.)(.)(.)(.)(.)(.)$"; // background(Y/N)_font_fontColor_color_backroundTheme_position
-    public const string CreateImage = @"^I(.)(.)(.)(.)(.)(.)(.)$"; // (L_P)_background(Y/N)_font_fontColor_color_backroundTheme_position
+    public const string EditTemplateImage = @"^IH(.)(.)(.)(.)(.)(.)(.)$"; // theme_background(Y/N)_font_fontColor_color_backroundTheme_position
+    public const string CreateImage = @"^I(.)(.)(.)(.)(.)(.)(.)(.)$"; // (L_P)_theme_background(Y/N)_font_fontColor_color_backroundTheme_position
 
     public const int CountTemplatesImage = 1;
     #endregion

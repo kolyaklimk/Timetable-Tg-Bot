@@ -144,7 +144,7 @@ public static class ImageCommands
             var row = new InlineKeyboardButton[(PublicConstants.CountTemplatesImage - i) >= 5 ? 5 : (PublicConstants.CountTemplatesImage - i) % 5];
             for (var j = 0; j < row.Length; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{backround}00000");
+                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{j}{backround}00000");
                 i++;
             }
             rows.Add(row);
@@ -171,12 +171,12 @@ public static class ImageCommands
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
-    public static async Task EditTemplateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task EditTemplateImage(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateImage);
-        string backround = match.Groups[1].Value;
-        string backroundTheme = match.Groups[5].Value;
-        string position = match.Groups[6].Value;
+        string backround = match.Groups[2].Value;
+        string backroundTheme = match.Groups[6].Value;
+        string position = match.Groups[7].Value;
 
         var rows = new List<InlineKeyboardButton[]>();
 
@@ -186,10 +186,10 @@ public static class ImageCommands
             buttons[0] = InlineKeyboardButton.WithCallbackData(PublicConstants.EditNameSettingsImage[i], "\0");
             for (int j = 0; j < 3; j++)
             {
-                if (match.Groups[i + 2].Value == j.ToString())
+                if (match.Groups[i + 3].Value == j.ToString())
                     buttons[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
                 else
-                    buttons[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..(3 + i)]}{j}{match.Groups[0].Value[(4 + i)..]}");
+                    buttons[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..(4 + i)]}{j}{match.Groups[0].Value[(5 + i)..]}");
             }
             rows.Add(buttons);
         }
@@ -203,7 +203,7 @@ public static class ImageCommands
                 if (backroundTheme == j.ToString())
                     buttons1[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
                 else
-                    buttons1[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..6]}{j}{match.Groups[0].Value[7..]}");
+                    buttons1[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..7]}{j}{match.Groups[0].Value[8..]}");
             }
             rows.Add(buttons1);
 
@@ -217,7 +217,7 @@ public static class ImageCommands
                     if (position == c.ToString())
                         buttons2[j + 1] = InlineKeyboardButton.WithCallbackData($"✅", "\0");
                     else
-                        buttons2[j + 1] = InlineKeyboardButton.WithCallbackData("-", $"{match.Groups[0].Value[..7]}{c}");
+                        buttons2[j + 1] = InlineKeyboardButton.WithCallbackData("-", $"{match.Groups[0].Value[..8]}{c}");
                     c++;
                 }
                 buttons2[4] = InlineKeyboardButton.WithCallbackData("|", "\0");
@@ -248,11 +248,10 @@ public static class ImageCommands
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
-    public static async Task LoadUserImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task LoadUserImage(CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         var rows = new List<InlineKeyboardButton[]>
         {
-            new[] { InlineKeyboardButton.WithCallbackData("Продолжить", "\0") },
             PublicConstants.EmptyInlineKeyboardButton,
             new[] {
             InlineKeyboardButton.WithCallbackData("Назад", $"IH{callbackQuery.Data[2..]}"),
@@ -271,12 +270,12 @@ public static class ImageCommands
     public static async Task CreateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateImage);
-        string backround = match.Groups[2].Value;
-        string font = match.Groups[3].Value;
-        string fontColor = match.Groups[4].Value;
-        string сolor = match.Groups[5].Value;
-        string backroundTheme = match.Groups[6].Value;
-        string position = match.Groups[7].Value;
+        string backround = match.Groups[3].Value;
+        string font = match.Groups[4].Value;
+        string fontColor = match.Groups[5].Value;
+        string сolor = match.Groups[6].Value;
+        string backroundTheme = match.Groups[7].Value;
+        string position = match.Groups[8].Value;
 
         if (backround == "0")
         {
