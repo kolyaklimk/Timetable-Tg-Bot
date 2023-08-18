@@ -270,6 +270,7 @@ public static class ImageCommands
     public static async Task CreateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateImage);
+        string theme = match.Groups[2].Value;
         string backround = match.Groups[3].Value;
         string font = match.Groups[4].Value;
         string fontColor = match.Groups[5].Value;
