@@ -93,6 +93,36 @@ public class TgBot
                     await context.SaveChangesAsync();
                     return;
                 }
+
+                if (waitingFor.WaitingForDocument)
+                {
+                    var userBuffer = await context.GetUserBuffersAsync(message.From, arg => new UserBuffer { Buffer1 = arg.Buffer1, MessageId = arg.MessageId });
+
+                    if (message.Type == MessageType.Document)
+                    {
+                        Console.WriteLine("MimeType " + message.Document.MimeType);
+                        Console.WriteLine("FileSize " + message.Document.FileSize);
+
+                        if (message.Document.MimeType.Contains("image"))
+                        {
+                            //Console.WriteLine("Height " + message.Document.Thumbnail.Height);
+                            //Console.WriteLine("Width " + message.Document.Thumbnail.Width);
+
+                            if (message.Document.FileSize < 11_000_000)
+                            {
+                                await ImageCommands.LoadUserImage(userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId, $"Всё ок");
+                            }
+                            else
+                            {
+                                await ImageCommands.LoadUserImage(userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId, $"Ошибка: файл больше 10 Мб\\!");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        await ImageCommands.LoadUserImage(userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId, $"Ошибка: Отправте фото Документом\\!");
+                    }
+                }
             }
 
             if (update.Type == UpdateType.CallbackQuery)
@@ -284,8 +314,9 @@ public class TgBot
                             case 'L':
                                 context.UpdateUserStateDocumentAsync(callbackQuery.From, true);
                                 context.UpdateUserBuffer1(callbackQuery.From, callbackQuery.Data);
+                                await context.SaveChangesAsync();
 
-                                await ImageCommands.LoadUserImage(callbackQuery, botClient);
+                                await ImageCommands.LoadUserImage(callbackQuery.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
                                 return;
 
                             // Create Image
@@ -307,6 +338,8 @@ public class TgBot
         {
             Console.WriteLine($"{update.Message?.From?.FirstName} {update.Message?.From?.Username} {DateTime.Now}\n");
             Console.WriteLine($"Telegram API Error: [{apiRequestException.ErrorCode}] - {apiRequestException.Message}\n");
+
+            try { await GeneralCommands.DeleteMessage(botClient, update.Message); } catch { }
         }
         catch (Exception ex)
         {

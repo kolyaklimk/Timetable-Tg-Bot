@@ -248,21 +248,21 @@ public static class ImageCommands
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
-    public static async Task LoadUserImage(CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task LoadUserImage(string data, ITelegramBotClient botClient, Chat chat, int messageId, string text = null)
     {
         var rows = new List<InlineKeyboardButton[]>
         {
             PublicConstants.EmptyInlineKeyboardButton,
             new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"IH{callbackQuery.Data[2..]}"),
+            InlineKeyboardButton.WithCallbackData("Назад", $"IH{data[2..]}"),
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         }
         };
 
         await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            "Отправь изображение *ДОКУМЕНТОМ*\n",
+            chat.Id,
+            messageId,
+            $"Отправь изображение *ДОКУМЕНТОМ*\n{text}",
             replyMarkup: new InlineKeyboardMarkup(rows),
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
