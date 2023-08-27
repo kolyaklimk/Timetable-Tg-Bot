@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Npgsql.Internal.TypeHandlers.GeometricHandlers;
 using SkiaSharp;
-using System.Runtime.CompilerServices;
 using System.Text;
 using Telegram.Bot.Types;
-using static System.Net.Mime.MediaTypeNames;
+using TimetableTgBot.Constants;
 
 namespace TimetableTgBot.Services;
 
@@ -20,7 +18,7 @@ public class ImageGeneration
             buffDay = buffDay.AddDays(1);
             listDays.Add(buffDay);
         }
-        for(int i=2;i<days.ImageDays.Count;i++)
+        for (int i = 2; i < days.ImageDays.Count; i++)
         {
             listDays.Remove(days.ImageDays[i]);
         }
@@ -29,20 +27,19 @@ public class ImageGeneration
 
     public static async Task CreateTimeTableV1(User user, BotDbContext context)
     {
-        var dayTextSize = 30;
-        var monthTextSize = 50;
         var listDays = await GetDaysForTimeTable(user, context);
-        SKTypeface font = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal);
 
         using (var paint = new SKPaint())
         {
-            paint.Typeface = font;
             paint.IsAntialias = true;
-
             List<string> lines = new();
-            
-            int width = 0;
-            int height = 0;
+            var dayTextSize = 50;
+            var monthTextSize = 70;
+            string familyName = "Roboto";
+            float buffWidth = 0;
+            float width = 0;
+            float height = 0;
+            int currectMonth = 13;
 
             foreach (var day in listDays)
             {
@@ -52,45 +49,79 @@ public class ImageGeneration
                     .OrderBy(arg => arg.Start)
                     .ToListAsync();
 
-                if(dayTimetable.Count>0)
+                if (dayTimetable.Count > 0)
                 {
-                    var str = new StringBuilder();
+                    if (day.Month != currectMonth)
+                    {
+                        currectMonth = day.Month;
+                        lines.Add($"-{PublicConstants.Months[currectMonth]}");
+                        paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold);
+                        paint.TextSize = monthTextSize;
+                        buffWidth = paint.MeasureText(PublicConstants.Months[currectMonth]);
+                        paint.TextSize = dayTextSize;
+                        paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Normal);
 
-                    str.Append($"{day.Day:dd.MM} - ");
+                        if (buffWidth > width)
+                            width = buffWidth;
+                        height += monthTextSize * 2;
+                    }
+                    else
+                    {
+                        height += dayTextSize;
+                    }
 
-                    foreach(var time in dayTimetable)
+                    var str = new StringBuilder($"{day:dd.MM} - ");
+                    foreach (var time in dayTimetable)
                     {
                         str.Append($"{time.Start:HH:mm}, ");
                     }
-
                     str.Remove(str.Length - 2, 2);
-                    
-                    var bounds = new SKRect();
-                    paint.MeasureText(str.ToString(), ref bounds);
+                    lines.Add(str.ToString());
+                    buffWidth = paint.MeasureText(str.ToString());
 
-                    if ((int)bounds.Width > width)
-                        width = (int)bounds.Width;
-                    height++;
+                    if (buffWidth > width)
+                        width = buffWidth;
                 }
             }
 
-            width += textSize * 2;
-            height *= textSize;
+            width += dayTextSize << 1;
+            height += (dayTextSize << 1) - (float)(monthTextSize - monthTextSize / 1.4);
+            bool isMonth = false;
 
-            using (var bitmap = new SKBitmap(width, height))
+            using (var bitmap = new SKBitmap((int)width, (int)height))
             {
                 using (var canvas = new SKCanvas(bitmap))
                 {
-                    canvas.Clear(SKColors.White); // Заливка фона белым цветом
+                    canvas.Clear();
+                    paint.Color = SKColors.White;
+                    canvas.DrawRoundRect(new SKRoundRect(new SKRect(0, 0, (int)width, (int)height), 50), paint);
 
-                    paint.Color = SKColors.Black;
-
-                    float y = textSize * 2;
-
+                    float y = dayTextSize - (float)(monthTextSize - monthTextSize / 1.4);
                     foreach (var line in lines)
                     {
-                        canvas.DrawText(line, textSize, y, paint);
-                        y += textSize; // Увеличиваем y для следующей строки
+                        if (line[0] == '-')
+                        {
+                            y += monthTextSize;
+                            paint.Color = SKColors.Black;
+                            paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold);
+                            paint.TextSize = monthTextSize;
+                            canvas.DrawText(line[1..], dayTextSize, y, paint);
+                            paint.Color = SKColors.Gray;
+                            paint.TextSize = dayTextSize;
+                            paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Normal);
+                            isMonth = true;
+                            continue;
+                        }
+                        if (isMonth)
+                        {
+                            y += monthTextSize;
+                            isMonth = false;
+                        }
+                        else
+                        {
+                            y += dayTextSize;
+                        }
+                        canvas.DrawText(line, dayTextSize, y, paint);
                     }
                 }
 
@@ -98,7 +129,6 @@ public class ImageGeneration
                 using (var data = image.Encode(SKEncodedImageFormat.Png, 0))
                 using (var stream = System.IO.File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"ski.png")))
                 {
-                    // save the data to a stream
                     data.SaveTo(stream);
                 }
             }

@@ -5,6 +5,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TimetableTgBot.Constants;
 using TimetableTgBot.Entities;
+using TimetableTgBot.Services;
 using TimetableTgBot.TgCommands;
 
 namespace TimetableTgBot;
@@ -104,6 +105,7 @@ public class TgBot
                         {
                             if (message.Document.FileSize < 11_000_000)
                             {
+                                await ImageGeneration.CreateTimeTableV1(message.From, context);
                             }
                             else
                             {
