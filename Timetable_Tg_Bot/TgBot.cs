@@ -6,8 +6,6 @@ using Telegram.Bot.Types.Enums;
 using TimetableTgBot.Constants;
 using TimetableTgBot.Entities;
 using TimetableTgBot.TgCommands;
-using System.Net.Http;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TimetableTgBot;
 
@@ -102,41 +100,19 @@ public class TgBot
 
                     if (message.Type == MessageType.Document)
                     {
-
-                        Console.WriteLine("MimeType " + message.Document.MimeType);
-                        Console.WriteLine("FileSize " + message.Document.FileSize);
-
                         if (message.Document.MimeType.StartsWith("image/"))
-                        {                            
+                        {
                             if (message.Document.FileSize < 11_000_000)
                             {
-                                var fileInfo = await botClient.GetFileAsync(message.Document.FileId);
-
-                                using (var httpClient = new HttpClient())
-                                {
-                                    var imageInfo = await httpClient.GetAsync($"https://api.telegram.org/file/bot{PrivateConstants.DB_TOKEN}/{fileInfo.FilePath}");
-                                    imageInfo.EnsureSuccessStatusCode();
-
-                                    var imageStream = await imageInfo.Content.ReadAsStreamAsync();
-
-                                    using (var image = Image.FromStream(imageStream))
-                                    {
-                                        var width = image.Width;
-                                        var height = image.Height;
-
-                                        await botClient.SendTextMessageAsync(e.Message.Chat.Id, $"Размер изображения: {width}x{height} пикселей");
-                                    }
-                                }
-                            }
-
-                            Console.WriteLine("Height " + message.Document.Thumbnail.Height);
-                                Console.WriteLine("Width " + message.Document.Thumbnail.Width);
-                                await ImageCommands.LoadUserImage(userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId, $"Всё ок");
                             }
                             else
                             {
                                 await ImageCommands.LoadUserImage(userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId, $"Ошибка: файл больше 10 Мб\\!");
                             }
+                        }
+                        else
+                        {
+                            await ImageCommands.LoadUserImage(userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId, $"Ошибка: Отправте фото  Документом\\!");
                         }
                     }
                     else

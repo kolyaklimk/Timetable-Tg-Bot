@@ -256,7 +256,7 @@ public static class ImageCommands
             new[] {
             InlineKeyboardButton.WithCallbackData("Назад", $"IH{data[2..]}"),
             InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
-        }
+            }
         };
 
         await botClient.EditMessageTextAsync(
@@ -264,6 +264,15 @@ public static class ImageCommands
             messageId,
             $"Отправь изображение *ДОКУМЕНТОМ*\n{text}",
             replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+    }
+
+    public static async Task PrintProgress(CallbackQuery callbackQuery, ITelegramBotClient botClient, string text = null)
+    {
+        await botClient.EditMessageTextAsync(
+            callbackQuery.Message.Chat.Id,
+            callbackQuery.Message.MessageId,
+            $"Создание изображения\nВ процессе: {text}",
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
@@ -286,18 +295,23 @@ public static class ImageCommands
         {
             switch (backroundTheme)
             {
-                // User Image
+                // Random Image
                 case "0":
                     break;
 
-                // Random Image
+                // Gradient
                 case "1":
                     break;
 
-                // Gradient
+                // User Image
                 case "2":
+                    using (var stream = new MemoryStream())
+                    {
+                        await botClient.GetInfoAndDownloadFileAsync(callbackQuery.Message.Document.FileId, stream);
+                    }
                     break;
             }
         }
     }
+
 }
