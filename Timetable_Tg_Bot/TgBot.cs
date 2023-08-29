@@ -105,7 +105,7 @@ public class TgBot
                             {
                                 if (message.Document.FileSize < 11_000_000)
                                 {
-                                    await ImageCommands.CreateImage(userBuffer.Buffer1, context, message.From, message.Chat, (int)userBuffer.MessageId, botClient);
+                                    await ImageCommands.CreateImage(userBuffer.Buffer1, context, message.From, message.Chat, (int)userBuffer.MessageId, botClient,update);
                                 }
                                 else
                                 {
