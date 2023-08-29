@@ -25,7 +25,7 @@ public class ImageGeneration
         return listDays;
     }
 
-    public static async Task CreateTimeTableV1(User user, BotDbContext context)
+    public static async Task<SKBitmap> CreateTimeTableV1(User user, BotDbContext context)
     {
         var listDays = await GetDaysForTimeTable(user, context);
 
@@ -88,51 +88,93 @@ public class ImageGeneration
             height += (dayTextSize << 1) - (float)(monthTextSize - monthTextSize / 1.4);
             bool isMonth = false;
 
-            using (var bitmap = new SKBitmap((int)width, (int)height))
-            {
-                using (var canvas = new SKCanvas(bitmap))
-                {
-                    canvas.Clear();
-                    paint.Color = SKColors.White;
-                    canvas.DrawRoundRect(new SKRoundRect(new SKRect(0, 0, (int)width, (int)height), 50), paint);
+            var bitmap = new SKBitmap((int)width, (int)height);
 
-                    float y = dayTextSize - (float)(monthTextSize - monthTextSize / 1.4);
-                    foreach (var line in lines)
+            using (var canvas = new SKCanvas(bitmap))
+            {
+                canvas.Clear();
+                paint.Color = SKColors.White;
+                canvas.DrawRoundRect(new SKRoundRect(new SKRect(0, 0, (int)width, (int)height), 50), paint);
+
+                float y = dayTextSize - (float)(monthTextSize - monthTextSize / 1.4);
+                foreach (var line in lines)
+                {
+                    if (line[0] == '-')
                     {
-                        if (line[0] == '-')
-                        {
-                            y += monthTextSize;
-                            paint.Color = SKColors.Black;
-                            paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold);
-                            paint.TextSize = monthTextSize;
-                            canvas.DrawText(line[1..], dayTextSize, y, paint);
-                            paint.Color = SKColors.Gray;
-                            paint.TextSize = dayTextSize;
-                            paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Normal);
-                            isMonth = true;
-                            continue;
-                        }
-                        if (isMonth)
-                        {
-                            y += monthTextSize;
-                            isMonth = false;
-                        }
-                        else
-                        {
-                            y += dayTextSize;
-                        }
-                        canvas.DrawText(line, dayTextSize, y, paint);
+                        y += monthTextSize;
+                        paint.Color = SKColors.Black;
+                        paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Bold);
+                        paint.TextSize = monthTextSize;
+                        canvas.DrawText(line[1..], dayTextSize, y, paint);
+                        paint.Color = SKColors.Gray;
+                        paint.TextSize = dayTextSize;
+                        paint.Typeface = SKTypeface.FromFamilyName(familyName, SKFontStyle.Normal);
+                        isMonth = true;
+                        continue;
                     }
+                    if (isMonth)
+                    {
+                        y += monthTextSize;
+                        isMonth = false;
+                    }
+                    else
+                    {
+                        y += dayTextSize;
+                    }
+                    canvas.DrawText(line, dayTextSize, y, paint);
                 }
 
-                using (var image = SKImage.FromBitmap(bitmap))
+                return bitmap;
+
+                /*using (var image = SKImage.FromBitmap(bitmap))
                 using (var data = image.Encode(SKEncodedImageFormat.Png, 0))
                 using (var stream = System.IO.File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"ski.png")))
                 {
                     data.SaveTo(stream);
-                }
+                }*/
+            }
+        }
+    }
+
+    public static async Task MergeBackgroundAndTimeTablbe(SKBitmap bitmapBackround, SKBitmap bitmapTimeTable)
+    {
+        // backround size = +-1080 x 1920
+
+        var WidthTimeTable = bitmapBackround.Width * 0.6;
+        var HeightTimeTable = WidthTimeTable * 2;
+
+        if (bitmapTimeTable.Height > HeightTimeTable)
+        {
+            WidthTimeTable = HeightTimeTable / bitmapTimeTable.Height * bitmapTimeTable.Width;
+        }
+        else
+        {
+            if (bitmapTimeTable.Width > WidthTimeTable)
+            {
+                HeightTimeTable = WidthTimeTable / bitmapTimeTable.Width * bitmapTimeTable.Height;
+            }
+            else
+            {
+                WidthTimeTable = bitmapTimeTable.Width;
+                HeightTimeTable = bitmapTimeTable.Height;
             }
         }
 
+        Console.WriteLine("WidthTimeTable" + WidthTimeTable);
+        Console.WriteLine("HeightTimeTable" + HeightTimeTable);
+        using (var canvas = new SKCanvas(bitmapBackround))
+        {
+            canvas.DrawBitmap(bitmapTimeTable, 500, 500);
+
+        }
+
+        using (var image = SKImage.FromBitmap(bitmapBackround))
+        using (var data = image.Encode(SKEncodedImageFormat.Png, 0))
+        using (var stream = System.IO.File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"ski.png")))
+        {
+            data.SaveTo(stream);
+        }
+
+        Console.WriteLine("Save");
     }
 }
