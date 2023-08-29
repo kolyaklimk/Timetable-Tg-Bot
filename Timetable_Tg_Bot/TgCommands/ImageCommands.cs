@@ -1,8 +1,10 @@
-﻿using System.Text.RegularExpressions;
+﻿using SkiaSharp;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using TimetableTgBot.Constants;
+using TimetableTgBot.Services;
 
 namespace TimetableTgBot.TgCommands;
 
@@ -276,9 +278,9 @@ public static class ImageCommands
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
-    public static async Task CreateImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task CreateImage(string data, BotDbContext context, User user, Chat chat, int messageId, ITelegramBotClient botClient, Update update = null)
     {
-        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.EditTemplateImage);
+        Match match = Regex.Match(data, PublicConstants.CreateImage);
         string theme = match.Groups[2].Value;
         string backround = match.Groups[3].Value;
         string font = match.Groups[4].Value;
@@ -287,6 +289,21 @@ public static class ImageCommands
         string backroundTheme = match.Groups[7].Value;
         string position = match.Groups[8].Value;
 
+        SKBitmap bitmapTimeTable = new SKBitmap();
+
+        switch (theme)
+        {
+            case "0":
+                bitmapTimeTable = await ImageGeneration.CreateTimeTableV1(user, context);
+                break;
+
+            case "1":
+                break;
+
+            case "2":
+                break;
+        }
+        Console.WriteLine(backroundTheme);
         if (backround == "0")
         {
             // Create only timetable
@@ -305,13 +322,32 @@ public static class ImageCommands
 
                 // User Image
                 case "2":
+
+                    Console.WriteLine(22);
+                    Console.WriteLine(update.Message.Document.FileId);
                     using (var stream = new MemoryStream())
                     {
-                        await botClient.GetInfoAndDownloadFileAsync(callbackQuery.Message.Document.FileId, stream);
+                        await botClient.GetInfoAndDownloadFileAsync(update.Message.Document.FileId, stream);
+                        using (SKBitmap bitmapOriginImage = SKBitmap.Decode(stream))
+                        {
+                            //stream.Seek(0, SeekOrigin.Begin);
+                            // Сбрасывается поток / не скачивается файл
+                            using (var bitmapBackround = bitmapOriginImage.Resize(new SKImageInfo((int)(1920.0 / bitmapOriginImage.Height * bitmapOriginImage.Width), 1920), SKFilterQuality.High))
+                            {
+                                ImageGeneration.MergeBackgroundAndTimeTablbe(bitmapBackround, bitmapTimeTable);
+                            }
+                        }
                     }
                     break;
             }
         }
+        bitmapTimeTable.Dispose();
+        Console.WriteLine(1);
+        /*await botClient.EditMessageTextAsync(
+            chat.Id,
+            messageId,
+            $"Создание изображения\nВ процессе:",
+            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);*/
     }
 
 }
