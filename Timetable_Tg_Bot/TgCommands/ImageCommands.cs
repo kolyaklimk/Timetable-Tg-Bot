@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using ImageMagick;
+using SkiaSharp;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -146,7 +147,7 @@ public static class ImageCommands
             var row = new InlineKeyboardButton[(PublicConstants.CountTemplatesImage - i) >= 5 ? 5 : (PublicConstants.CountTemplatesImage - i) % 5];
             for (var j = 0; j < row.Length; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{j}{backround}00000");
+                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{j}{backround}0000a");
                 i++;
             }
             rows.Add(row);
@@ -209,8 +210,8 @@ public static class ImageCommands
             }
             rows.Add(buttons1);
 
-            int c = 0;
-            for (int i = 0; i < 3; i++)
+            char c = 'a';
+            for (int i = 0; i < 5; i++)
             {
                 var buttons2 = new InlineKeyboardButton[5];
                 buttons2[0] = InlineKeyboardButton.WithCallbackData("|", "\0");
@@ -303,7 +304,7 @@ public static class ImageCommands
             case "2":
                 break;
         }
-        Console.WriteLine(backroundTheme);
+
         if (backround == "0")
         {
             // Create only timetable
@@ -322,19 +323,17 @@ public static class ImageCommands
 
                 // User Image
                 case "2":
-
-                    Console.WriteLine(22);
-                    Console.WriteLine(update.Message.Document.FileId);
+                    Console.WriteLine("start");
                     using (var stream = new MemoryStream())
                     {
                         await botClient.GetInfoAndDownloadFileAsync(update.Message.Document.FileId, stream);
-                        using (SKBitmap bitmapOriginImage = SKBitmap.Decode(stream))
+                        stream.Seek(0, SeekOrigin.Begin);
+
+                        using (MagickImage backroundImage = new MagickImage(stream))
                         {
-                            //stream.Seek(0, SeekOrigin.Begin);
-                            // Сбрасывается поток / не скачивается файл
-                            using (var bitmapBackround = bitmapOriginImage.Resize(new SKImageInfo((int)(1920.0 / bitmapOriginImage.Height * bitmapOriginImage.Width), 1920), SKFilterQuality.High))
+                            using (MagickImage timeTableImage = new MagickImage(bitmapTimeTable.Encode(SKEncodedImageFormat.Png, 0).ToArray()))
                             {
-                                ImageGeneration.MergeBackgroundAndTimeTablbe(bitmapBackround, bitmapTimeTable);
+                                ImageGeneration.MergeBackgroundAndTimeTablbe(position, backroundImage, timeTableImage);
                             }
                         }
                     }
@@ -342,7 +341,7 @@ public static class ImageCommands
             }
         }
         bitmapTimeTable.Dispose();
-        Console.WriteLine(1);
+
         /*await botClient.EditMessageTextAsync(
             chat.Id,
             messageId,
