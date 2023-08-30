@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ImageMagick;
+using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
 using System.Text;
 using Telegram.Bot.Types;
@@ -125,55 +126,125 @@ public class ImageGeneration
                 }
 
                 return bitmap;
-
-                /*using (var image = SKImage.FromBitmap(bitmap))
-                using (var data = image.Encode(SKEncodedImageFormat.Png, 0))
-                using (var stream = System.IO.File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"ski.png")))
-                {
-                    data.SaveTo(stream);
-                }*/
             }
         }
     }
 
-    public static async Task MergeBackgroundAndTimeTablbe(SKBitmap bitmapBackround, SKBitmap bitmapTimeTable)
+    public static async Task MergeBackgroundAndTimeTablbe(string position, MagickImage backround, MagickImage timeTable)
     {
-        // backround size = +-1080 x 1920
+        // backround +-1080x1920
 
-        var WidthTimeTable = bitmapBackround.Width * 0.6;
-        var HeightTimeTable = WidthTimeTable * 2;
+        backround.Resize((int)(1920.0 / backround.Height * backround.Width), 1920);
 
-        if (bitmapTimeTable.Height > HeightTimeTable)
+        double widthTimeTable, heightTimeTable;
+
+        if (backround.Width > 1080)
         {
-            WidthTimeTable = HeightTimeTable / bitmapTimeTable.Height * bitmapTimeTable.Width;
+            widthTimeTable = 648; // 1080 * 0.6
         }
         else
         {
-            if (bitmapTimeTable.Width > WidthTimeTable)
+            widthTimeTable = backround.Width * 0.6;
+        }
+        heightTimeTable = widthTimeTable * 2;
+
+
+        if (timeTable.Height > heightTimeTable)
+        {
+            widthTimeTable = heightTimeTable / timeTable.Height * timeTable.Width;
+        }
+        else
+        {
+            if (timeTable.Width > widthTimeTable)
             {
-                HeightTimeTable = WidthTimeTable / bitmapTimeTable.Width * bitmapTimeTable.Height;
+                heightTimeTable = widthTimeTable / timeTable.Width * timeTable.Height;
             }
             else
             {
-                WidthTimeTable = bitmapTimeTable.Width;
-                HeightTimeTable = bitmapTimeTable.Height;
+                widthTimeTable = timeTable.Width;
+                heightTimeTable = timeTable.Height;
             }
         }
 
-        Console.WriteLine("WidthTimeTable" + WidthTimeTable);
-        Console.WriteLine("HeightTimeTable" + HeightTimeTable);
-        using (var canvas = new SKCanvas(bitmapBackround))
-        {
-            canvas.DrawBitmap(bitmapTimeTable, 500, 500);
+        timeTable.Scale((int)widthTimeTable, (int)heightTimeTable);
 
+        var interval = (backround.Height - backround.Width * 0.2 - timeTable.Height) / 4;
+        int x = 0, y = 0;
+        switch (position)
+        {
+            // 1/5
+            case "a":
+                y = (int)(backround.Width * 0.1);
+                x = (int)(backround.Width * 0.1);
+                break;
+            case "b":
+                y = (int)(backround.Width * 0.1);
+                x = (int)(backround.Width / 2.0 - timeTable.Width / 2.0);
+                break;
+            case "c":
+                y = (int)(backround.Width * 0.1);
+                x = (int)(backround.Width - backround.Width * 0.1) - timeTable.Width;
+                break;
+
+            // 2/5
+            case "d":
+                y = (int)(backround.Width * 0.1 + interval);
+                x = (int)(backround.Width * 0.1);
+                break;
+            case "e":
+                y = (int)(backround.Width * 0.1 + interval);
+                x = (int)(backround.Width / 2.0 - timeTable.Width / 2.0);
+                break;
+            case "f":
+                y = (int)(backround.Width * 0.1 + interval);
+                x = (int)(backround.Width - backround.Width * 0.1) - timeTable.Width;
+                break;
+
+            // 3/5
+            case "g":
+                y = (int)(backround.Width * 0.1 + interval * 2);
+                x = (int)(backround.Width * 0.1);
+                break;
+            case "h":
+                y = (int)(backround.Width * 0.1 + interval * 2);
+                x = (int)(backround.Width / 2.0 - timeTable.Width / 2.0);
+                break;
+            case "i":
+                y = (int)(backround.Width * 0.1 + interval * 2);
+                x = (int)(backround.Width - backround.Width * 0.1) - timeTable.Width;
+                break;
+
+            // 4/5
+            case "j":
+                y = (int)(backround.Width * 0.1 + interval * 3);
+                x = (int)(backround.Width * 0.1);
+                break;
+            case "k":
+                y = (int)(backround.Width * 0.1 + interval * 3);
+                x = (int)(backround.Width / 2.0 - timeTable.Width / 2.0);
+                break;
+            case "l":
+                y = (int)(backround.Width * 0.1 + interval * 3);
+                x = (int)(backround.Width - backround.Width * 0.1) - timeTable.Width;
+                break;
+
+            // 5/5
+            case "m":
+                y = (int)(backround.Height - backround.Width * 0.1) - timeTable.Height;
+                x = (int)(backround.Width * 0.1);
+                break;
+            case "n":
+                y = (int)(backround.Height - backround.Width * 0.1) - timeTable.Height;
+                x = (int)(backround.Width / 2.0 - timeTable.Width / 2.0);
+                break;
+            case "o":
+                y = (int)(backround.Height - backround.Width * 0.1) - timeTable.Height;
+                x = (int)(backround.Width - backround.Width * 0.1) - timeTable.Width;
+                break;
         }
 
-        using (var image = SKImage.FromBitmap(bitmapBackround))
-        using (var data = image.Encode(SKEncodedImageFormat.Png, 0))
-        using (var stream = System.IO.File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"ski.png")))
-        {
-            data.SaveTo(stream);
-        }
+        backround.Composite(timeTable, x, y, CompositeOperator.SrcOver);
+        backround.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"{position}ski.Jpeg"));
 
         Console.WriteLine("Save");
     }
