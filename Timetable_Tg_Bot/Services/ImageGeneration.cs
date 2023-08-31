@@ -26,6 +26,86 @@ public class ImageGeneration
         return listDays;
     }
 
+    private static SKBlendMode GetRandomBlendModeWithoutClear(int rand)
+    {
+        switch (rand)
+        {
+            case 0:
+                return SKBlendMode.Dst;
+            case 1:
+                return SKBlendMode.SrcOver;
+            case 2:
+                return SKBlendMode.SrcIn;
+            case 3:
+                return SKBlendMode.Plus;
+            case 4:
+                return SKBlendMode.Screen;
+            case 5:
+                return SKBlendMode.Lighten;
+            case 6:
+                return SKBlendMode.ColorDodge;
+            case 7:
+                return SKBlendMode.Color;
+            default:
+                return SKBlendMode.Luminosity;
+        }
+    }
+
+    private static SKColor GetRandomColor(Random random)
+    {
+        var red = (byte)random.Next(0, 255);
+        var green = (byte)random.Next(0, 255);
+        var blue = (byte)random.Next(0, 255);
+
+        return new SKColor(red, green, blue);
+    }
+
+    private static SKColor[] GetRandomColors(int count, Random random)
+    {
+        var colors = new SKColor[count];
+        for (int i = 0; i < count; i++)
+        {
+            colors[i] = GetRandomColor(random);
+        }
+
+        return colors;
+    }
+
+    public static async Task<MagickImage> CreateGradient()
+    {
+        Random random = new Random();
+
+        using (var paint = new SKPaint())
+        {
+            using (var bitmap = new SKBitmap(1080, 1920))
+            {
+                using (var canvas = new SKCanvas(bitmap))
+                {
+                    canvas.Clear();
+
+                    paint.Shader = SKShader.CreateLinearGradient(
+                            new SKPoint(random.Next(1080), random.Next(1920)),
+                            new SKPoint(random.Next(1080), random.Next(1920)),
+                            GetRandomColors(2, random),
+                            SKShaderTileMode.Clamp);
+
+                    canvas.DrawRect(new SKRect(0, 0, 1080, 1920), paint);
+
+                    paint.BlendMode = GetRandomBlendModeWithoutClear(random.Next(8));
+
+                    paint.Shader = SKShader.CreateLinearGradient(
+                            new SKPoint(random.Next(1080), random.Next(1920)),
+                            new SKPoint(random.Next(1080), random.Next(1920)),
+                            GetRandomColors(2, random),
+                            SKShaderTileMode.Clamp);
+
+                    canvas.DrawRect(new SKRect(0, 0, 1080, 1920), paint);
+                }
+                return new MagickImage(bitmap.Encode(SKEncodedImageFormat.Png, 0).ToArray());
+            }
+        }
+    }
+
     public static async Task<SKBitmap> CreateTimeTableV1(User user, BotDbContext context)
     {
         var listDays = await GetDaysForTimeTable(user, context);
@@ -88,7 +168,6 @@ public class ImageGeneration
             width += dayTextSize << 1;
             height += (dayTextSize << 1) - (float)(monthTextSize - monthTextSize / 1.4);
             bool isMonth = false;
-
             var bitmap = new SKBitmap((int)width, (int)height);
 
             using (var canvas = new SKCanvas(bitmap))
@@ -124,9 +203,8 @@ public class ImageGeneration
                     }
                     canvas.DrawText(line, dayTextSize, y, paint);
                 }
-
-                return bitmap;
             }
+            return bitmap;
         }
     }
 
@@ -134,7 +212,8 @@ public class ImageGeneration
     {
         // backround +-1080x1920
 
-        backround.Resize((int)(1920.0 / backround.Height * backround.Width), 1920);
+        if (backround.Height != 1920)
+            backround.Resize((int)(1920.0 / backround.Height * backround.Width), 1920);
 
         double widthTimeTable, heightTimeTable;
 

@@ -290,7 +290,7 @@ public static class ImageCommands
         string backroundTheme = match.Groups[7].Value;
         string position = match.Groups[8].Value;
 
-        SKBitmap bitmapTimeTable = new SKBitmap();
+        SKBitmap bitmapTimeTable = null;
 
         switch (theme)
         {
@@ -311,6 +311,7 @@ public static class ImageCommands
         }
         else
         {
+            MagickImage backroundImage = null;
             switch (backroundTheme)
             {
                 // Random Image
@@ -319,26 +320,24 @@ public static class ImageCommands
 
                 // Gradient
                 case "1":
+                    backroundImage = await ImageGeneration.CreateGradient();
                     break;
 
                 // User Image
                 case "2":
-                    Console.WriteLine("start");
                     using (var stream = new MemoryStream())
                     {
                         await botClient.GetInfoAndDownloadFileAsync(update.Message.Document.FileId, stream);
                         stream.Seek(0, SeekOrigin.Begin);
-
-                        using (MagickImage backroundImage = new MagickImage(stream))
-                        {
-                            using (MagickImage timeTableImage = new MagickImage(bitmapTimeTable.Encode(SKEncodedImageFormat.Png, 0).ToArray()))
-                            {
-                                ImageGeneration.MergeBackgroundAndTimeTablbe(position, backroundImage, timeTableImage);
-                            }
-                        }
+                        backroundImage = new MagickImage(stream);
                     }
                     break;
             }
+            using (MagickImage timeTableImage = new MagickImage(bitmapTimeTable.Encode(SKEncodedImageFormat.Png, 0).ToArray()))
+            {
+                ImageGeneration.MergeBackgroundAndTimeTablbe(position, backroundImage, timeTableImage);
+            }
+            backroundImage.Dispose();
         }
         bitmapTimeTable.Dispose();
 
