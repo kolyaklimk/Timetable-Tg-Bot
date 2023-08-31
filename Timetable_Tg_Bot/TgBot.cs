@@ -343,8 +343,6 @@ public class TgBot
             {
                 Console.WriteLine($"{update.Message?.From?.FirstName} {update.Message?.From?.Username} {DateTime.Now}\n");
                 Console.WriteLine($"Telegram API Error: [{apiRequestException.ErrorCode}] - {apiRequestException.Message}\n");
-
-                try { await GeneralCommands.DeleteMessage(botClient, update.Message); } catch { }
             }
             catch (Exception ex)
             {
