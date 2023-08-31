@@ -40,6 +40,7 @@ public class PublicConstants
     public const string CreateImage = @"^I(.)(.)(.)(.)(.)(.)(.)(.)$"; // (L_P)_theme_background(Y/N)_font_fontColor_color_backroundTheme_position
 
     public const int CountTemplatesImage = 1;
+    public const int CountBackgroundImage = 4;
     #endregion
 
     #region Other

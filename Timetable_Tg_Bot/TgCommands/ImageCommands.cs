@@ -1,5 +1,6 @@
 ﻿using ImageMagick;
 using SkiaSharp;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -316,6 +317,14 @@ public static class ImageCommands
             {
                 // Random Image
                 case "0":
+                    var random = new Random();
+                    string resourceName = $"TimetableTgBot.Resources.BackgroudImages.{random.Next(1, PublicConstants.CountBackgroundImage)}.jpg"; // Замените на путь к вашему изображению
+                    Assembly assembly = Assembly.GetExecutingAssembly();
+
+                    using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        backroundImage = new MagickImage(stream);
+                    }
                     break;
 
                 // Gradient
