@@ -227,16 +227,15 @@ public class ImageGeneration
         }
         heightTimeTable = widthTimeTable * 2;
 
-
         if (timeTable.Height > heightTimeTable)
         {
-            widthTimeTable = heightTimeTable / timeTable.Height * timeTable.Width;
+            widthTimeTable = heightTimeTable / timeTable.Height * widthTimeTable;
         }
         else
         {
             if (timeTable.Width > widthTimeTable)
             {
-                heightTimeTable = widthTimeTable / timeTable.Width * timeTable.Height;
+                heightTimeTable = widthTimeTable / timeTable.Width * heightTimeTable;
             }
             else
             {
