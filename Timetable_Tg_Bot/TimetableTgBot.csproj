@@ -1,36 +1,38 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Publish">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>.</DockerfileContext>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Resources\BackgroudImages\0.jpg" />
-    <None Remove="Resources\BackgroudImages\1.jpg" />
-    <None Remove="Resources\BackgroudImages\2.jpg" />
-    <None Remove="Resources\BackgroudImages\3.jpg" />
-    <None Remove="Resources\BackgroudImages\4.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\BackgroudImages\0.jpg" />
-    <Content Include="Resources\BackgroudImages\1.jpg" />
-    <Content Include="Resources\BackgroudImages\2.jpg" />
-    <Content Include="Resources\BackgroudImages\3.jpg" />
-    <Content Include="Resources\BackgroudImages\4.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.2.0" />
-    <PackageReference Include="Microsoft.NET.Build.Containers" Version="7.0.400" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
-    <PackageReference Include="SkiaSharp" Version="2.88.5" />
-    <PackageReference Include="Telegram.Bot" Version="19.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-    <Folder Include="Resources\Fonts\" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>.</DockerfileContext>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Resources\BackgroudImages\1.jpg" />
+		<None Remove="Resources\BackgroudImages\2.jpg" />
+		<None Remove="Resources\BackgroudImages\3.jpg" />
+		<None Remove="Resources\BackgroudImages\4.jpg" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\BackgroudImages\1.jpg">
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\BackgroudImages\2.jpg">
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\BackgroudImages\3.jpg">
+		</EmbeddedResource>
+		<EmbeddedResource Include="Resources\BackgroudImages\4.jpg">
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.2.0" />
+		<PackageReference Include="Microsoft.NET.Build.Containers" Version="7.0.400" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
+		<PackageReference Include="SkiaSharp" Version="2.88.5" />
+		<PackageReference Include="Telegram.Bot" Version="19.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Properties\" />
+		<Folder Include="Resources\Fonts\" />
+	</ItemGroup>
 </Project>
