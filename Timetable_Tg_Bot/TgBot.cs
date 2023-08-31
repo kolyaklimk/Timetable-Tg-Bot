@@ -5,7 +5,6 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TimetableTgBot.Constants;
 using TimetableTgBot.Entities;
-using TimetableTgBot.Services;
 using TimetableTgBot.TgCommands;
 
 namespace TimetableTgBot;
@@ -105,7 +104,7 @@ public class TgBot
                             {
                                 if (message.Document.FileSize < 11_000_000)
                                 {
-                                    await ImageCommands.CreateImage(userBuffer.Buffer1, context, message.From, message.Chat, (int)userBuffer.MessageId, botClient,update);
+                                    await ImageCommands.CreateImage(userBuffer.Buffer1, context, message.From, message.Chat, (int)userBuffer.MessageId, botClient, update);
                                 }
                                 else
                                 {
@@ -133,6 +132,12 @@ public class TgBot
                         context.UpdateUserStateTextAsync(callbackQuery.From, false);
                         if (callbackQuery?.Data[1] != 'F')
                             context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
+                        await context.SaveChangesAsync();
+                    }
+                    // Check WaitingForText
+                    if (waitingFor.WaitingForDocument)
+                    {
+                        context.UpdateUserStateDocumentAsync(callbackQuery.From, false);
                         await context.SaveChangesAsync();
                     }
 
@@ -320,7 +325,7 @@ public class TgBot
 
                                 // Create Image
                                 case 'P':
-                                    //await ImageCommands.CreateImage(context, callbackQuery, botClient);
+                                    await ImageCommands.CreateImage(callbackQuery.Data, context, callbackQuery.From, callbackQuery.Message.Chat, callbackQuery.Message.MessageId, botClient);
                                     return;
                             }
                             return;
