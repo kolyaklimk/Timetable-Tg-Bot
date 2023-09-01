@@ -72,7 +72,7 @@ public class TgBot
                             // Description in create
                             case 'E':
                                 context.UpdateUserBuffer3(message.From, message.Text);
-                                await TimeTableCommands.AddDescriptionTimeTable(message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId);
+                                await TimeTableCommands.ChooseTimeIsBusyDescriptionTimeTable(true, "F", "G", message.Text, userBuffer.Buffer1, botClient, message.Chat, (int)userBuffer.MessageId);
                                 break;
 
                             // Description in edit time
@@ -129,10 +129,13 @@ public class TgBot
                     // Check WaitingForText
                     if (waitingFor.WaitingForText)
                     {
-                        context.UpdateUserStateTextAsync(callbackQuery.From, false);
-                        if (callbackQuery?.Data[1] != 'F')
-                            context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
-                        await context.SaveChangesAsync();
+                        if (callbackQuery.Data != "\0")
+                        {
+                            context.UpdateUserStateTextAsync(callbackQuery.From, false);
+                            if (callbackQuery?.Data[1] != 'F')
+                                context.UpdateUserBuffer3(callbackQuery.From, string.Empty);
+                            await context.SaveChangesAsync();
+                        }
                     }
                     // Check WaitingForText
                     if (waitingFor.WaitingForDocument)
@@ -162,21 +165,6 @@ public class TgBot
                                     await TimeTableCommands.MenuDayTimeTable(context, callbackQuery, botClient);
                                     return;
 
-                                // Choose hour
-                                case 'B':
-                                    await TimeTableCommands.ChooseHourTimeTable("C", "G", callbackQuery, botClient);
-                                    return;
-
-                                // Choose minute
-                                case 'C':
-                                    await TimeTableCommands.ChooseMinuteTimeTable("D", "B", callbackQuery, botClient);
-                                    return;
-
-                                // Choose is busy
-                                case 'D':
-                                    await TimeTableCommands.ChooseIsBusyTimeTable("EN", "C", callbackQuery, botClient);
-                                    return;
-
                                 // Add description
                                 case 'E':
                                     var userBuffer = await context.GetUserBuffersAsync(callbackQuery.From, arg => new UserBuffer { Buffer3 = arg.Buffer3 });
@@ -188,7 +176,7 @@ public class TgBot
                                         userBuffer.Buffer3 = null;
                                     }
 
-                                    await TimeTableCommands.AddDescriptionTimeTable(userBuffer.Buffer3, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
+                                    await TimeTableCommands.ChooseTimeIsBusyDescriptionTimeTable(true, "F", "G", userBuffer.Buffer3, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
                                     await context.SaveChangesAsync();
                                     return;
 
@@ -215,19 +203,9 @@ public class TgBot
                                     await TimeTableCommands.EditTimeTimeTable(null, callbackQuery?.Data, context, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId, callbackQuery);
                                     return;
 
-                                // Create template -> Choose hour
+                                // Create template -> Choose hour/minute/isBusy
                                 case 'M':
-                                    await TimeTableCommands.ChooseHourTimeTable("N", "Q", callbackQuery, botClient);
-                                    return;
-
-                                // Create template -> Choose minute
-                                case 'N':
-                                    await TimeTableCommands.ChooseMinuteTimeTable("O", "M", callbackQuery, botClient);
-                                    return;
-
-                                // Create template -> Choose isBusy
-                                case 'O':
-                                    await TimeTableCommands.ChooseIsBusyTimeTable("P", "N", callbackQuery, botClient);
+                                    await TimeTableCommands.ChooseTimeIsBusyDescriptionTimeTable(false, "P", "Q", null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
                                     return;
 
                                 // Create new template
@@ -255,19 +233,9 @@ public class TgBot
                                     await TimeTableCommands.EditTimeTemplateTimeTable(context, callbackQuery, botClient);
                                     return;
 
-                                // Create new time in template -> Choose hour
+                                // Create new time in template -> Choose hour/minute/isBusy
                                 case 'U':
-                                    await TimeTableCommands.ChooseHourTimeTable("V", "S", callbackQuery, botClient);
-                                    return;
-
-                                // Create new time in template -> Choose minute
-                                case 'V':
-                                    await TimeTableCommands.ChooseMinuteTimeTable("W", "U", callbackQuery, botClient);
-                                    return;
-
-                                // Create new time in template -> Choose isBusy
-                                case 'W':
-                                    await TimeTableCommands.ChooseIsBusyTimeTable("X", "V", callbackQuery, botClient);
+                                    await TimeTableCommands.ChooseTimeIsBusyDescriptionTimeTable(false, "X", "S", null, callbackQuery?.Data, botClient, callbackQuery.Message.Chat, callbackQuery.Message.MessageId);
                                     return;
 
                                 // Create new time in template -> Save new time
@@ -331,7 +299,6 @@ public class TgBot
                             return;
                     }
                 }
-
                 await GeneralCommands.DeleteMessage(botClient, message);
             }
             catch (ApiRequestException apiRequestException)

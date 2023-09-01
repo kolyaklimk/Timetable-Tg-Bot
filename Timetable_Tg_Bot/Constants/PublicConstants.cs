@@ -16,10 +16,7 @@ public class PublicConstants
     #endregion
 
     #region TimeTable
-    public const string ChooseHourTimeTable = @"^T(.)(.{2})(.{2})(.{4})(\w*)$"; // (B_M_U)_day_month_year_otherInfo
-    public const string ChooseMinuteTimeTable = @"^T(.)(.{2})(.{2})(.{2})(.{4})(\w*)$"; // (C_N_V)_hour_day_month_year_otherInfo
-    public const string ChooseIsBusyTimeTable = @"^T(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$"; // (D_O_W)_minute_hour_day_month_year_otherInfo
-    public const string AddDescriptionTimeTable = @"^TE(.)(.)(.{2})(.{2})(.{2})(.{2})(.{4})$";// deleteDescription_true\false_minute_hour_day_month_year
+    public const string AddDescriptionTimeTable = @"^T(.)(.)(.)(.{2})(.{2})(.{2})(.{2})(.{4})(\w*)$";// (C)_deleteDescription_true\false_minute_hour_day_month_year
     public const string SaveTimeTable = @"^TF(.)(.{2})(.{2})(.{2})(.{2})(.{4})$";// true\false_minute_hour_day_month_year
     public const string MenuDayTimeTable = @"^TG(.{2})(.{2})(.{4})$"; // day_month_year
     public const string DeleteDayTimeTable = @"^TI(.{2})(.{2})(.{4})$"; // day_month_year

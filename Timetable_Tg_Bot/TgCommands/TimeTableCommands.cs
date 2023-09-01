@@ -41,7 +41,7 @@ public static class TimeTableCommands
         var rows = new InlineKeyboardButton[][] {
             new[]{
                 InlineKeyboardButton.WithCallbackData("Изменить время",$"TJ{day}{month}{year}"),
-                InlineKeyboardButton.WithCallbackData("Выбрать время", $"TB{day}{month}{year}"),
+                InlineKeyboardButton.WithCallbackData("Выбрать время", $"TEN00012{day}{month}{year}"),
             },
             new[]{
                 InlineKeyboardButton.WithCallbackData("Удалить всё", $"TI{day}{month}{year}"),
@@ -66,152 +66,110 @@ public static class TimeTableCommands
             replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
-    public static async Task ChooseHourTimeTable(string next, string previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
+    public static async Task ChooseTimeIsBusyDescriptionTimeTable(bool isDescription, string next, string previous, string? description, string data, ITelegramBotClient botClient, Chat chat, int messageId)
     {
-        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseHourTimeTable);
+        Match match = Regex.Match(data, PublicConstants.AddDescriptionTimeTable);
 
-        string day = match.Groups[2].Value;
-        string month = match.Groups[3].Value;
-        string year = match.Groups[4].Value;
-        string otherInfo = match.Groups[5].Value;
+        string property = match.Groups[1].Value;
+        string deleteDescription = match.Groups[2].Value;
+        string isBusy = match.Groups[3].Value;
+        string minute = match.Groups[4].Value;
+        string hour = match.Groups[5].Value;
+        string day = match.Groups[6].Value;
+        string month = match.Groups[7].Value;
+        string year = match.Groups[8].Value;
+        string otherInfo = match.Groups[9].Value;
 
-        // Hours
         var rows = new List<InlineKeyboardButton[]>();
 
+        // Hour
+        rows.Add(new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Час", "\0"),
+        });
         for (var i = 0; i < 24;)
         {
             var row = new InlineKeyboardButton[6];
             for (var j = 0; j < 6; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}{i:00}{day}{month}{year}{otherInfo}");
+                if (i.ToString("00") == hour)
+                {
+                    row[j] = InlineKeyboardButton.WithCallbackData($"{PublicConstants.Okey}{i:00}", "\0");
+                }
+                else
+                {
+                    row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{property}{deleteDescription}{isBusy}{minute}{i:00}{day}{month}{year}{otherInfo}");
+                }
                 i++;
             }
             rows.Add(row);
         }
 
-        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
-        rows.Add(new[] {
-            InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}{day}{month}{year}{otherInfo}"),
-
-            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
-        });
-
-        // Send message
-        await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            $"Вы выбрали: __*{day}/{month}/{year}*__\nВыберите час:",
-            replyMarkup: new InlineKeyboardMarkup(rows),
-            parseMode: ParseMode.MarkdownV2);
-    }
-
-    public static async Task ChooseMinuteTimeTable(string next, string previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
-    {
-        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseMinuteTimeTable);
-
-        string hour = match.Groups[2].Value;
-        string day = match.Groups[3].Value;
-        string month = match.Groups[4].Value;
-        string year = match.Groups[5].Value;
-        string otherInfo = match.Groups[6].Value;
-
         // Minute
-        var rows = new List<InlineKeyboardButton[]>();
-
+        rows.Add(new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Минуты", "\0"),
+        });
         for (var i = 0; i < 60;)
         {
             var row = new InlineKeyboardButton[6];
             for (var j = 0; j < 6; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{next}{i:00}{hour}{day}{month}{year}{otherInfo}");
+                if (i.ToString("00") == minute)
+                {
+                    row[j] = InlineKeyboardButton.WithCallbackData($"{PublicConstants.Okey}{i:00}", "\0");
+                }
+                else
+                {
+                    row[j] = InlineKeyboardButton.WithCallbackData($"{i:00}", $"T{property}{deleteDescription}{isBusy}{i:00}{hour}{day}{month}{year}{otherInfo}");
+                }
                 i += 5;
             }
             rows.Add(row);
         }
-        rows.Add(PublicConstants.EmptyInlineKeyboardButton);
-        rows.Add(new[] {
+
+        // IsBusy
+        if (isBusy == "0")
+        {
+            rows.Add(new[]
+            {
+                InlineKeyboardButton.WithCallbackData($"{PublicConstants.Okey}Свободно", "\0"),
+                InlineKeyboardButton.WithCallbackData("Запись", $"T{property}{deleteDescription}1{minute}{hour}{day}{month}{year}{otherInfo}"),
+            });
+        }
+        else
+        {
+            rows.Add(new[]
+            {
+                InlineKeyboardButton.WithCallbackData($"Свободно",$"T{property}{deleteDescription}0{minute}{hour}{day}{month}{year}{otherInfo}"),
+                InlineKeyboardButton.WithCallbackData($"{PublicConstants.Okey}Запись", "\0"),
+            });
+        }
+
+        // Description
+        if (isDescription)
+        {
+            rows.Add(string.IsNullOrEmpty(description)
+                ? new[]
+                {
+                InlineKeyboardButton.WithCallbackData("Сохранить без описания", $"T{next}{isBusy}{minute}{hour}{day}{month}{year}{otherInfo}"),
+                }
+                : new[]
+                {
+                InlineKeyboardButton.WithCallbackData("Удалить описание", $"T{property}Y{isBusy}{minute}{hour}{day}{month}{year}{otherInfo}"),
+                InlineKeyboardButton.WithCallbackData("Сохранить", $"T{next}{isBusy}{minute}{hour}{day}{month}{year}{otherInfo}"),
+                });
+        }
+        else
+        {
+            rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Сохранить", $"T{next}{isBusy}{minute}{hour}{day}{month}{year}{otherInfo}"), });
+        }
+        rows.Add(new[]
+        {
             InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}{day}{month}{year}{otherInfo}"),
-            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
+            PublicConstants.EmptyInlineKeyboardButton[0],
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
         });
-
-        // Send message
-        await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            "Вы выбрали:\n" +
-            $"Дата: __*{day}/{month}/{year}*__\n" +
-            $"Час: __*{hour}*__",
-            replyMarkup: new InlineKeyboardMarkup(rows),
-            parseMode: ParseMode.MarkdownV2);
-    }
-
-    public static async Task ChooseIsBusyTimeTable(string next, string previous, CallbackQuery callbackQuery, ITelegramBotClient botClient)
-    {
-        Match match = Regex.Match(callbackQuery?.Data, PublicConstants.ChooseIsBusyTimeTable);
-
-        string minute = match.Groups[2].Value;
-        string hour = match.Groups[3].Value;
-        string day = match.Groups[4].Value;
-        string month = match.Groups[5].Value;
-        string year = match.Groups[6].Value;
-        string otherInfo = match.Groups[7].Value;
-
-        var rows = new InlineKeyboardButton[][]
-        {
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("Свободно",$"T{next}0{minute}{hour}{day}{month}{year}{otherInfo}"),
-                InlineKeyboardButton.WithCallbackData("Запись", $"T{next}1{minute}{hour}{day}{month}{year}{otherInfo}"),
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("Назад", $"T{previous}{hour}{day}{month}{year}{otherInfo}"),
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
-            }
-        };
-
-        // Send message
-        await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            $"Вы свободны?\n" +
-            $"Дата: {day}/{month}/{year}\n" +
-            $"Время: {hour}:{minute}",
-            replyMarkup: new InlineKeyboardMarkup(rows),
-            parseMode: ParseMode.MarkdownV2);
-    }
-
-    public static async Task AddDescriptionTimeTable(string? description, string data, ITelegramBotClient botClient, Chat chat, int messageId)
-    {
-        Match match = Regex.Match(data, PublicConstants.AddDescriptionTimeTable);
-
-        string isBusy = match.Groups[2].Value;
-        string minute = match.Groups[3].Value;
-        string hour = match.Groups[4].Value;
-        string day = match.Groups[5].Value;
-        string month = match.Groups[6].Value;
-        string year = match.Groups[7].Value;
-
-        var rows = new InlineKeyboardButton[][]
-        {
-            string.IsNullOrEmpty(description)
-            ? new[]
-            {
-                InlineKeyboardButton.WithCallbackData("Сохранить описания", $"TF{isBusy}{minute}{hour}{day}{month}{year}"),
-            }
-            : new[]
-            {
-                InlineKeyboardButton.WithCallbackData("Удалить описание", $"TEY{isBusy}{minute}{hour}{day}{month}{year}"),
-                InlineKeyboardButton.WithCallbackData("Сохранить", $"TF{isBusy}{minute}{hour}{day}{month}{year}"),
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new[]
-            {
-                InlineKeyboardButton.WithCallbackData("Назад", $"TD{minute}{hour}{day}{month}{year}"),
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
-            }
-        };
 
         // Send message
         await botClient.EditMessageTextAsync(
@@ -220,9 +178,8 @@ public static class TimeTableCommands
             $"Напишите, если хотите изменить описание к этой записи :\\)\n" +
             $"Дата: {day}/{month}/{year}\n" +
             $"Время: {hour}:{minute}\n" +
-            $"Запись: {"1" == isBusy}" + (description != null ? $"\nОписание: {description}" : ""),
-            replyMarkup: new InlineKeyboardMarkup(rows),
-            parseMode: ParseMode.MarkdownV2);
+            $"Запись: {"1" == isBusy}" + (isDescription != false ?  $"\nОписание: {(description != null ? description : "-")}":""),
+            replyMarkup: new InlineKeyboardMarkup(rows));
     }
 
     public static async Task SaveTimeTable(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
@@ -449,7 +406,7 @@ public static class TimeTableCommands
             rows.Add(row);
         }
 
-        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Создать", $"TM{day}{month}{year}") });
+        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Создать", $"TMN00012{day}{month}{year}") });
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
                 InlineKeyboardButton.WithCallbackData("Назад", $"TG{day}{month}{year}"),
@@ -576,7 +533,7 @@ public static class TimeTableCommands
             rows.Add(row);
         }
 
-        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Добавить", $"TU{day}{month}{year}{idTemplate}") });
+        rows.Add(new[] { InlineKeyboardButton.WithCallbackData("Добавить", $"TUN00012{day}{month}{year}{idTemplate}") });
         rows.Add(PublicConstants.EmptyInlineKeyboardButton);
         rows.Add(new[] {
                 InlineKeyboardButton.WithCallbackData("Назад", $"TR0{day}{month}{year}{idTemplate}"),
