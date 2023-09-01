@@ -1,6 +1,7 @@
 ﻿using ImageMagick;
 using SkiaSharp;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -12,29 +13,6 @@ namespace TimetableTgBot.TgCommands;
 
 public static class ImageCommands
 {
-    public static async Task ImageMenu(CallbackQuery callbackQuery, ITelegramBotClient botClient)
-    {
-        var MenuMarkup = new InlineKeyboardMarkup(new[]
-        {
-            new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Выбрать диапазон", $"IA{callbackQuery.Message.Date.Month:00}{callbackQuery.Message.Date.Year}"),
-            },
-            new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Повторить прошлое изображение", $"\0"),
-            },
-            PublicConstants.EmptyInlineKeyboardButton,
-            new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu)
-            },
-        });
-
-        await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
-            "Меню image:",
-            replyMarkup: MenuMarkup);
-    }
-
     public static async Task RangeOfDaysImage(BotDbContext context, CallbackQuery callbackQuery, ITelegramBotClient botClient)
     {
         Match match = Regex.Match(callbackQuery?.Data, PublicConstants.RangeOfDaysImage);
@@ -271,17 +249,18 @@ public static class ImageCommands
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
-    public static async Task PrintProgress(CallbackQuery callbackQuery, ITelegramBotClient botClient, string text = null)
+    public static async Task PrintProgress(Chat chat, int messageId, ITelegramBotClient botClient, string text = null)
     {
         await botClient.EditMessageTextAsync(
-            callbackQuery.Message.Chat.Id,
-            callbackQuery.Message.MessageId,
+            chat.Id,
+            messageId,
             $"Создание изображения\nВ процессе: {text}",
             parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
     public static async Task CreateImage(string data, BotDbContext context, User user, Chat chat, int messageId, ITelegramBotClient botClient, Update update = null)
     {
+        await PrintProgress(chat, messageId, botClient, "Создаю картинку расписания");
         Match match = Regex.Match(data, PublicConstants.CreateImage);
         string theme = match.Groups[2].Value;
         string backround = match.Groups[3].Value;
@@ -292,6 +271,14 @@ public static class ImageCommands
         string position = match.Groups[8].Value;
 
         SKBitmap bitmapTimeTable = null;
+        MagickImage backroundImage = null;
+        var rows = new List<InlineKeyboardButton[]>();
+        string link = "";
+        var content = new MultipartFormDataContent
+        {
+            { new StringContent(PrivateConstants.ImgbbKey), "key" },
+            { new StringContent("3600"), "expiration" },
+        };
 
         switch (theme)
         {
@@ -306,55 +293,96 @@ public static class ImageCommands
                 break;
         }
 
-        if (backround == "0")
+        using (MagickImage timeTableImage = new MagickImage(bitmapTimeTable.Encode(SKEncodedImageFormat.Png, 0).ToArray()))
         {
-            // Create only timetable
-        }
-        else
-        {
-            MagickImage backroundImage = null;
-            switch (backroundTheme)
+            bitmapTimeTable.Dispose();
+            if (backround != "0")
             {
-                // Random Image
-                case "0":
-                    var random = new Random();
-                    string resourceName = $"TimetableTgBot.Resources.BackgroudImages.{random.Next(1, PublicConstants.CountBackgroundImage)}.jpg"; // Замените на путь к вашему изображению
-                    Assembly assembly = Assembly.GetExecutingAssembly();
+                switch (backroundTheme)
+                {
+                    // Random Image
+                    case "0":
+                        await PrintProgress(chat, messageId, botClient, "Беру рандомное фото");
+                        var random = new Random();
+                        string resourceName = $"TimetableTgBot.Resources.BackgroudImages.{random.Next(1, PublicConstants.CountBackgroundImage)}.jpg";
+                        Assembly assembly = Assembly.GetExecutingAssembly();
 
-                    using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                    {
-                        backroundImage = new MagickImage(stream);
-                    }
-                    break;
+                        using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                        {
+                            backroundImage = new MagickImage(stream);
+                        }
+                        rows.Add(new[] {
+                            InlineKeyboardButton.WithCallbackData("Заново", data),
+                        });
+                        break;
 
-                // Gradient
-                case "1":
-                    backroundImage = await ImageGeneration.CreateGradient();
-                    break;
+                    // Gradient
+                    case "1":
+                        await PrintProgress(chat, messageId, botClient, "Создаю градиент");
+                        backroundImage = await ImageGeneration.CreateGradient();
+                        rows.Add(new[] {
+                            InlineKeyboardButton.WithCallbackData("Заново", data),
+                        });
+                        break;
 
-                // User Image
-                case "2":
-                    using (var stream = new MemoryStream())
-                    {
-                        await botClient.GetInfoAndDownloadFileAsync(update.Message.Document.FileId, stream);
-                        stream.Seek(0, SeekOrigin.Begin);
-                        backroundImage = new MagickImage(stream);
-                    }
-                    break;
-            }
-            using (MagickImage timeTableImage = new MagickImage(bitmapTimeTable.Encode(SKEncodedImageFormat.Png, 0).ToArray()))
-            {
+                    // User Image
+                    case "2":
+                        await PrintProgress(chat, messageId, botClient, "Скачиваю фон");
+                        using (var stream = new MemoryStream())
+                        {
+                            await botClient.GetInfoAndDownloadFileAsync(update.Message.Document.FileId, stream);
+                            stream.Seek(0, SeekOrigin.Begin);
+                            backroundImage = new MagickImage(stream);
+                        }
+                        break;
+                }
+
+                await PrintProgress(chat, messageId, botClient, "Объединяю фон с расписанием");
                 ImageGeneration.MergeBackgroundAndTimeTablbe(position, backroundImage, timeTableImage);
+                content.Add(new StringContent(backroundImage.ToBase64(MagickFormat.Jpeg)), "image");
+                backroundImage.Dispose();
             }
-            backroundImage.Dispose();
+            else
+            {
+                content.Add(new StringContent(timeTableImage.ToBase64(MagickFormat.Png)), "image");
+            }
         }
-        bitmapTimeTable.Dispose();
 
-        /*await botClient.EditMessageTextAsync(
+        await PrintProgress(chat, messageId, botClient, "Загружаю картинку");
+        using (HttpClient httpClient = new HttpClient())
+        {
+            try
+            {
+                HttpResponseMessage response = await httpClient.PostAsync("https://api.imgbb.com/1/upload", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var jsonDoc = await JsonSerializer.DeserializeAsync<JsonDocument>(await response.Content.ReadAsStreamAsync(), options);
+                    link = jsonDoc.RootElement.GetProperty("data").GetProperty("url").GetString();
+                }
+                else
+                {
+                    Console.WriteLine($"Ошибка: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка: {ex.Message}");
+            }
+        }
+
+        rows.Add(new[] {
+            InlineKeyboardButton.WithCallbackData("Назад", $"IH{data[2..]}"),
+            InlineKeyboardButton.WithCallbackData("Меню", PublicConstants.GoMenu),
+            });
+
+        await botClient.EditMessageTextAsync(
             chat.Id,
             messageId,
-            $"Создание изображения\nВ процессе:",
-            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);*/
+            $"Скачать в хорошем качестве можно по [ССЫЛКЕ]({link})\\.\n Ссылка действует 1 час\\.",
+            replyMarkup: new InlineKeyboardMarkup(rows),
+            parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
     }
 
 }
