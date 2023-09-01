@@ -322,8 +322,5 @@ public class ImageGeneration
         }
 
         backround.Composite(timeTable, x, y, CompositeOperator.SrcOver);
-        backround.Write(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), $"{position}ski.Jpeg"));
-
-        Console.WriteLine("Save");
     }
 }
