@@ -280,14 +280,9 @@ public class TgBot
                         case 'I':
                             switch (callbackQuery.Data[1])
                             {
-                                // Image menu
-                                case 'M':
-                                    await ImageCommands.ImageMenu(callbackQuery, botClient);
-                                    return;
-
                                 // Choose first day 
                                 case 'A':
-                                    await GeneralCommands.ChooseDay("IB", "IM", callbackQuery, botClient);
+                                    await GeneralCommands.ChooseDay("IB", null, callbackQuery, botClient);
                                     return;
 
                                 // Choose second day 

@@ -36,7 +36,7 @@ public static class GeneralCommands
         var MenuMarkup = new InlineKeyboardMarkup(new[]
         {
             new InlineKeyboardButton[] {
-                InlineKeyboardButton.WithCallbackData("Изображение", PublicConstants.ImageMenu),
+                InlineKeyboardButton.WithCallbackData("Изображение", $"IA{message.Date.Month:00}{message.Date.Year}"),
                 InlineKeyboardButton.WithCallbackData("Расписание", $"TA{message.Date.Month:00}{message.Date.Year}") },
             new InlineKeyboardButton[] {
                 PublicConstants.SupportMenu,
