@@ -122,7 +122,7 @@ public static class ImageCommands
             var row = new InlineKeyboardButton[(PublicConstants.CountTemplatesImage - i) >= 5 ? 5 : (PublicConstants.CountTemplatesImage - i) % 5];
             for (var j = 0; j < row.Length; j++)
             {
-                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{j}10000a");
+                row[j] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{j}1000a");
                 i++;
             }
             rows.Add(row);
@@ -149,35 +149,50 @@ public static class ImageCommands
         string theme = match.Groups[1].Value;
         string backround = match.Groups[2].Value;
         string font = match.Groups[3].Value;
-        string fontColor = match.Groups[4].Value;
-        string color = match.Groups[5].Value;
-        string backroundTheme = match.Groups[6].Value;
-        string position = match.Groups[7].Value;
+        string colorTheme = match.Groups[4].Value;
+        string backroundTheme = match.Groups[5].Value;
+        string position = match.Groups[6].Value;
 
         var rows = new List<InlineKeyboardButton[]>();
 
-        for (int i = 0; i < 3; i++)
+
+        var buttons = new InlineKeyboardButton[4];
+        buttons[0] = InlineKeyboardButton.WithCallbackData("Шрифт", "\0");
+        for (int j = 0; j < 3; j++)
         {
-            var buttons = new InlineKeyboardButton[4];
-            buttons[0] = InlineKeyboardButton.WithCallbackData(PublicConstants.EditNameSettingsImage[i], "\0");
-            for (int j = 0; j < 3; j++)
+            if (font == j.ToString())
+                buttons[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
+            else
+                buttons[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"IH{theme}{backround}{j}{colorTheme}{backroundTheme}{position}");
+        }
+        rows.Add(buttons);
+
+        if (colorTheme == "0")
+        {
+            rows.Add(new[]
             {
-                if (match.Groups[i + 3].Value == j.ToString())
-                    buttons[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
-                else
-                    buttons[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..(4 + i)]}{j}{match.Groups[0].Value[(5 + i)..]}");
-            }
-            rows.Add(buttons);
+                InlineKeyboardButton.WithCallbackData("✅Белая тема", "\0"),
+                InlineKeyboardButton.WithCallbackData("Темная тема", $"IH{theme}{backround}{font}1{backroundTheme}{position}"),
+            });
+        }
+        else
+        {
+            rows.Add(new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Белая тема", $"IH{theme}{backround}{font}0{backroundTheme}{position}"),
+                InlineKeyboardButton.WithCallbackData("✅Темная тема", "\0"),
+            });
         }
 
         if (backround != "0")
         {
             rows.Add(new InlineKeyboardButton[]
             {
-            InlineKeyboardButton.WithCallbackData("Без фона", $"IH{theme}0{font}{fontColor}{color}{backroundTheme}{position}"),
+            InlineKeyboardButton.WithCallbackData("Без фона", $"IH{theme}0{font}{colorTheme}{backroundTheme}{position}"),
             InlineKeyboardButton.WithCallbackData("✅Фон", "\0")
             });
 
+            // backroundTheme
             var buttons1 = new InlineKeyboardButton[4];
             buttons1[0] = InlineKeyboardButton.WithCallbackData("Фон", "\0");
             for (int j = 0; j < 3; j++)
@@ -185,10 +200,11 @@ public static class ImageCommands
                 if (backroundTheme == j.ToString())
                     buttons1[j + 1] = InlineKeyboardButton.WithCallbackData($"✅{j}", "\0");
                 else
-                    buttons1[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..7]}{j}{match.Groups[0].Value[8..]}");
+                    buttons1[j + 1] = InlineKeyboardButton.WithCallbackData(j.ToString(), $"{match.Groups[0].Value[..6]}{j}{match.Groups[0].Value[7..]}");
             }
             rows.Add(buttons1);
 
+            // position
             char c = 'a';
             for (int i = 0; i < 5; i++)
             {
@@ -199,7 +215,7 @@ public static class ImageCommands
                     if (position == c.ToString())
                         buttons2[j + 1] = InlineKeyboardButton.WithCallbackData($"✅", "\0");
                     else
-                        buttons2[j + 1] = InlineKeyboardButton.WithCallbackData("-", $"{match.Groups[0].Value[..8]}{c}");
+                        buttons2[j + 1] = InlineKeyboardButton.WithCallbackData("-", $"{match.Groups[0].Value[..7]}{c}");
                     c++;
                 }
                 buttons2[4] = InlineKeyboardButton.WithCallbackData("|", "\0");
@@ -211,7 +227,7 @@ public static class ImageCommands
             rows.Add(new InlineKeyboardButton[]
             {
             InlineKeyboardButton.WithCallbackData("✅Без фона", "\0"),
-            InlineKeyboardButton.WithCallbackData("Фон", $"IH{theme}1{font}{fontColor}{color}{backroundTheme}{position}")
+            InlineKeyboardButton.WithCallbackData("Фон", $"IH{theme}1{font}{colorTheme}{backroundTheme}{position}")
             });
         }
         if (backroundTheme == "2")
@@ -273,10 +289,9 @@ public static class ImageCommands
         string theme = match.Groups[2].Value;
         string backround = match.Groups[3].Value;
         string font = match.Groups[4].Value;
-        string fontColor = match.Groups[5].Value;
-        string сolor = match.Groups[6].Value;
-        string backroundTheme = match.Groups[7].Value;
-        string position = match.Groups[8].Value;
+        string colortheme = match.Groups[5].Value;
+        string backroundTheme = match.Groups[6].Value;
+        string position = match.Groups[7].Value;
 
         SKBitmap bitmapTimeTable = null;
         MagickImage backroundImage = null;
