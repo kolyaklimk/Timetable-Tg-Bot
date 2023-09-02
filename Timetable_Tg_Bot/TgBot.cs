@@ -269,7 +269,7 @@ public class TgBot
 
                                 // Choose template
                                 case 'C':
-                                    await ImageCommands.ChooseTemplateImage(context, callbackQuery, botClient);
+                                    await ImageCommands.ChooseTemplateImage(callbackQuery, botClient);
                                     return;
 
                                 // Edit template
