@@ -1,6 +1,5 @@
 ﻿using ImageMagick;
 using SkiaSharp;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
@@ -304,13 +303,8 @@ public static class ImageCommands
                     case "0":
                         await PrintProgress(chat, messageId, botClient, "Беру рандомное фото");
                         var random = new Random();
-                        string resourceName = $"TimetableTgBot.Resources.BackgroudImages.{random.Next(1, PublicConstants.CountBackgroundImage)}.jpg";
-                        Assembly assembly = Assembly.GetExecutingAssembly();
-
-                        using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                        {
-                            backroundImage = new MagickImage(stream);
-                        }
+                        string resourceName = $"Resources\\BackgroudImages\\{random.Next(1, PublicConstants.CountBackgroundImage)}.jpg";
+                        backroundImage = new MagickImage(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, resourceName));
                         rows.Add(new[] {
                             InlineKeyboardButton.WithCallbackData("Заново", data),
                         });

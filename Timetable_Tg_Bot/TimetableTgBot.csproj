@@ -12,16 +12,21 @@
 		<None Remove="Resources\BackgroudImages\2.jpg" />
 		<None Remove="Resources\BackgroudImages\3.jpg" />
 		<None Remove="Resources\BackgroudImages\4.jpg" />
+		<None Remove="Resources\Fonts\constani.ttf" />
 	</ItemGroup>
 	<ItemGroup>
-		<EmbeddedResource Include="Resources\BackgroudImages\1.jpg">
-		</EmbeddedResource>
-		<EmbeddedResource Include="Resources\BackgroudImages\2.jpg">
-		</EmbeddedResource>
-		<EmbeddedResource Include="Resources\BackgroudImages\3.jpg">
-		</EmbeddedResource>
-		<EmbeddedResource Include="Resources\BackgroudImages\4.jpg">
-		</EmbeddedResource>
+		<Content Include="Resources\BackgroudImages\1.jpg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Resources\BackgroudImages\2.jpg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Resources\BackgroudImages\3.jpg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Resources\BackgroudImages\4.jpg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.2.0" />
